@@ -15,13 +15,16 @@
 							<v-container  id="home-text" class="pa-5 ma-auto">
 								<v-row  justify="center" align="center" class="pa-5 ma-auto">
 									<v-col cols="12" class="align-text-center">
-										Welcome to relay-synth.com, a fun and engaging interactive web app for teaching sound synthesis for music production.
+										Welcome to Relay Synth, a fun and engaging interactive web app for teaching sound synthesis for music production.
 										<br/><br/>
-										Click below to begin. 
+										Click a button below to begin. 
 									</v-col>
 									<v-container class="d-flex justify-end px-5">
 										<router-link to="/tutorials">
-											<v-btn id="tutorial-button" large class="primary">tutorials</v-btn>
+											<v-btn id="tutorial-button" width="125" large class="ma-1 primary">tutorials</v-btn>
+										</router-link>
+										<router-link to="/play">
+											<v-btn id="play-button" width="125" large class="ma-1 primary">play</v-btn>
 										</router-link>
 									</v-container>
 								</v-row>

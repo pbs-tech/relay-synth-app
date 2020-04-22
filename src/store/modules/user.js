@@ -24,7 +24,7 @@ const actions = {
     login({commit}, user) {
         return new Promise((resolve, reject) => {
             commit('authRequest')
-            axios.post('https://localhost:8000/login', user)
+            axios.post('https://api.relay-synth.tech/login', user)
             .then(response => {
                 const token = response.data.token;
                 const user = response.data.user
@@ -52,7 +52,7 @@ const actions = {
     signup({commit}, user) {
         return new Promise((resolve, reject) => {
             commit('authRequest');
-            axios.post('https://localhost:8000/signup', user)
+            axios.post('https://api.relay-synth.tech/signup', user)
             .then(response => {
                 const token = response.data.token;
                 const user = response.data.user;
@@ -91,7 +91,7 @@ const actions = {
     
     async updateScore({commit}, score) {
         const userEmail = localStorage.getItem('userEmail');
-        const response = await axios.patch('http://localhost:8000/user/update/score',
+        const response = await axios.patch('https://api.relay-synth.tech/user/update/score',
             { email: userEmail, tutorialScore: score});
         const updatedScore = response.data.totalScore;
         localStorage.setItem('userScore', updatedScore);
@@ -101,7 +101,7 @@ const actions = {
     async updateTutorialsCompleted({commit}, tutorialCompleteId)   {
         const userEmail = localStorage.getItem('userEmail');
         commit('updateRequest');
-        const response = await axios.patch('http://localhost:8000/user/update/tutorials',
+        const response = await axios.patch('https://api.relay-synth.tech/user/update/tutorials',
         { email: userEmail, tutorialId: tutorialCompleteId});
         const tutorialsCompleted = response.data.tutorialsCompleted;
         localStorage.setItem('tutorialsCompleted', JSON.stringify(tutorialsCompleted));

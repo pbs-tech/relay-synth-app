@@ -15,11 +15,11 @@ const getters = {
 
 const actions = {
     async fetchTitles({ commit }) {
-        const response = await axios.get('http://localhost:8000/tutorials/titles');
+        const response = await axios.get('https://api.relay-synth.tech/tutorials/titles');
         commit('setTutorialTitles', response.data);
     },
     async fetchTutorialCount({ commit }) {
-        const response = await axios.get('http://localhost:8000/tutorials/count');
+        const response = await axios.get('https://api.relay-synth.tech/tutorials/count');
         commit('setTutorialCount', response.data);
     },
 };

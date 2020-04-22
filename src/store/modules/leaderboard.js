@@ -11,7 +11,7 @@ const getters = {
 
 const actions = {
     async fetchScores({ commit }) { 
-        const response = await axios.get('http://localhost:8000/leaderboard');
+        const response = await axios.get('https://api.relay-synth.tech/leaderboard');
         commit('setScores', response.data.users);
         commit('setRanks');
 

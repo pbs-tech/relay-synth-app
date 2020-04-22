@@ -1,4 +1,4 @@
-<template >
+<template>
 	<v-container class="my-5">
 		<h1 id="about-title" class="display-3 py-3 text--text">About</h1>
 		<h2 id="problem-heading" class="headline text--text"> The Problem </h2>
@@ -68,6 +68,16 @@
 				</a>
 			</v-card>
 		</v-row>
+		<h2 id="references-subheading" class="py-5 headline text--text"> References </h2>
+		<p class="text-justify text-align body-1">
+			<strong> Synthesizer Image credit </strong> <br/>
+			saragraphika (2020). Synthesizer. [online] Pixabay.com. Available at: https://cdn.pixabay.com/photo/2015/02/01/22/24/music-620360_1280.jpg [Accessed 22 Apr. 2020].
+		</p>
+		<p class="text-justify body-1">
+			<strong> Aspects of tutorials adapted from </strong> <br/>
+			Russ, M. (2002). Sound Synthesis and Sampling. Focal Press, pp.75–100. <br/>
+			Robehmed, N. (2019). Sine, Square, Triangle, Saw : Synth Waveforms - Perfect Circuit. [online] www.perfectcircuit.com. Available at: https://www.perfectcircuit.com/signal/difference-between-waveforms [Accessed 13 Apr. 2020].
+		</p>
     </v-container>
 </template>
 

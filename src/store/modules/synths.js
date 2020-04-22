@@ -37,13 +37,13 @@ const getters = {
 
 const actions = {
     async fetchTutorialSynthData({commit}, tutorialId) {
-        const response = await axios.get('http://localhost:8000/tutorials/' + tutorialId + '/synth');
+        const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/synth');
         commit('setRequirements', response.data.parameters);
         commit('setTutorialSynth', response.data);
     },
     async fetchSynthBase({commit}, tutorialId) {
         console.log('fetching synth settings');
-        const response = await axios.get('http://localhost:8000/tutorials/' + tutorialId + '/synth/settings');
+        const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/synth/settings');
         commit('setSynthBase', response.data);
 
     },

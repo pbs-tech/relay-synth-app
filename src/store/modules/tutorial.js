@@ -27,7 +27,7 @@ const getters = {
 
 const actions = {
     async fetchTutorialText({ commit }, tutorialId) {
-        const response = await axios.get('http://localhost:8000/tutorials/' + tutorialId + '/text');
+        const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/text');
         commit('setTutorialData', response.data);
     },
 };
