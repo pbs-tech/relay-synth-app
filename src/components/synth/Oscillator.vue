@@ -19,27 +19,42 @@
 <script>
 import Tone from "tone";
 import Nexus from "nexusui";
-import { mapGetters, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
 import SynthMixin from '@/mixins/SynthMixin';
 import UIMixin from '@/mixins/UIMixin';
 
 export default {
     name: 'Oscillator',
-    mixins: [SynthMixin, UIMixin], 
+    mixins: [SynthMixin, UIMixin],
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const userSynthData = computed(() => synthsStore.userSynthData)
+        const userSynth = computed(() => synthsStore.userSynth)
+
+        const setMatching = (value) => {
+            synthsStore.setMatching(value)
+        }
+
+        return {
+            userSynthData,
+            userSynth,
+            setMatching
+        }
+    },
     data() {
         return {
             waveforms: ["Waveform 1", "Waveform 2", "Waveform 3", "Waveform 4"],
             userWaveform: null,
         }
     },
-    computed: mapGetters(['userSynthData','userSynth',]),
     mounted() {
         this.initUi();
         this.setOscillator(this.userSynth, this.selectOscillator);
     },
     
     methods: {
-        ...mapMutations(['setMatching']),
         initUi() {
             this.selectOscillator = this.createSelect("osc-select", this.waveforms);
 

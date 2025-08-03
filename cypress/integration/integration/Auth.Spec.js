@@ -1,6 +1,10 @@
 let user;
 let token;
-const getStore = () => cy.window().its('app.$store');
+const getPiniaStore = (storeName) => cy.window().then((win) => {
+    const pinia = win.app.config.globalProperties.$pinia;
+    return pinia._s.get(storeName);
+});
+
 describe('JWT', () => {
     before(function fetchUser() {
         cy.request('POST', 'https://localhost:8000/login', {
@@ -45,11 +49,12 @@ describe('JWT', () => {
     }) 
     it('Allows user onto routes requiring authentication', function() {
         cy.log(token);
-        getStore().then((store) => {
-            store.dispatch('login', { email: 'alex_peebles@outlook.com',
-            password: '***REMOVED***'});
+        getPiniaStore('user').then((userStore) => {
+            userStore.login({ email: 'alex_peebles@outlook.com', password: '***REMOVED***' });
         })
-        getStore().its('getters.isLoggedIn').should('eq', true);
+        getPiniaStore('user').then((userStore) => {
+            expect(userStore.isLoggedIn).to.be.true;
+        });
         cy.visit('/tutorials');
         
    })

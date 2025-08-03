@@ -18,7 +18,8 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
 import TutorialCard from '@/components/tutorial/list/TutorialCard'
 
 export default {
@@ -29,6 +30,15 @@ export default {
     components: {
         TutorialCard
     },
+    setup() {
+        const userStore = useUserStore()
+
+        const tutorialsCompleted = computed(() => userStore.tutorialsCompleted)
+
+        return {
+            tutorialsCompleted
+        }
+    },
     methods: {
         isTutorialTitleComplete(number) {
             if (this.tutorialsCompleted.includes(number)) {
@@ -37,9 +47,6 @@ export default {
                 return false;
             }
         }
-    },
-    computed: mapGetters([ 'tutorialsCompleted']),
-
-
+    }
 }
 </script>

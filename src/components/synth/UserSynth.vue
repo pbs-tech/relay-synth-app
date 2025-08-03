@@ -34,15 +34,15 @@
     </div>
 </template>
 <script>
-
 import Nexus from "nexusui";
 import Tone from "tone";
-import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
+import { useExampleStore } from '@/stores/useExampleStore'
 import SynthMixin from '@/mixins/SynthMixin';
 import ExampleMixin from '@/mixins/ExampleMixin';
 import UIMixin from '@/mixins/UIMixin';
 import IOMixin from '@/mixins/IOMixin';
-
 
 export default {
     name: 'TutorialSynth',
@@ -50,14 +50,41 @@ export default {
         tutorialId: String
     },
     mixins: [SynthMixin, ExampleMixin, UIMixin, IOMixin],
+    setup() {
+        const synthsStore = useSynthsStore()
+        const exampleStore = useExampleStore()
 
+        const userSynth = computed(() => synthsStore.userSynth)
+        const tutorialSynth = computed(() => synthsStore.tutorialSynth)
+        const example = computed(() => exampleStore.example)
+
+        const fetchExample = (tutorialId) => {
+            return exampleStore.fetchExample(tutorialId)
+        }
+
+        const fetchSynthBase = (tutorialId) => {
+            return synthsStore.fetchSynthBase(tutorialId)
+        }
+
+        const setUserSynth = () => {
+            synthsStore.setUserSynth()
+        }
+
+        return {
+            userSynth,
+            tutorialSynth,
+            example,
+            fetchExample,
+            fetchSynthBase,
+            setUserSynth
+        }
+    },
     data() {
         return {
             playButton: false,
             show: false
         }
     },
-    computed: mapGetters(['userSynth','tutorialSynth','example']),
 
     mounted() {
         this.initUi();
@@ -71,8 +98,6 @@ export default {
 
     },
     methods: {
-        ...mapActions(['fetchExample','fetchSynthBase']),
-        ...mapMutations(['setUserSynth']),
         initUi() {
             this.piano = this.createPiano("user-piano");
             this.oscilloscope = this.createOsc("user-osc");

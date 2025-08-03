@@ -42,22 +42,40 @@
     </v-container>
 </template>
 <script>
-
-import { mapGetters, mapActions } from 'vuex';
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
+import { useTutorialStore } from '@/stores/useTutorialStore'
 
 export default {
     name:'TutorialText',
     props: {
         tutorialId: String,
     },
+    setup() {
+        const userStore = useUserStore()
+        const tutorialStore = useTutorialStore()
+
+        const tutorialComplete = computed(() => userStore.tutorialComplete)
+        const tutorial = computed(() => tutorialStore.tutorial)
+
+        const fetchTutorialText = (tutorialId) => {
+            return tutorialStore.fetchTutorialText(tutorialId)
+        }
+
+        const isTutorialComplete = (tutorialId) => {
+            return userStore.isTutorialComplete(tutorialId)
+        }
+
+        return {
+            tutorialComplete,
+            tutorial,
+            fetchTutorialText,
+            isTutorialComplete
+        }
+    },
     created() {
         this.fetchTutorialText(this.tutorialId);
         this.isTutorialComplete(this.tutorialId)
-    },
-    computed: mapGetters(['tutorialComplete', 'tutorial']),
-
-    methods: {
-        ...mapActions(['fetchTutorialText', "isTutorialComplete"])
-    },
+    }
 }
 </script>

@@ -16,24 +16,42 @@
     </v-snackbar>
 </template>
 <script>
-
-import { mapGetters, mapMutations, mapActions } from 'vuex';
-
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
+import { useUserStore } from '@/stores/useUserStore'
+import { useTutorialStore } from '@/stores/useTutorialStore'
 
 export default {
     name: 'CorrectAnswerAlert',
-    computed:  mapGetters(['matching','tutorialComplete','pointsAvailable']),
+    setup() {
+        const synthsStore = useSynthsStore()
+        const userStore = useUserStore()
+        const tutorialStore = useTutorialStore()
+
+        const matching = computed(() => synthsStore.matching)
+        const tutorialComplete = computed(() => userStore.tutorialComplete)
+        const pointsAvailable = computed(() => tutorialStore.pointsAvailable)
+
+        const setMatching = (value) => {
+            synthsStore.setMatching(value)
+        }
+
+        const reset = () => {
+            setMatching(undefined)
+        }
+
+        return {
+            matching,
+            tutorialComplete,
+            pointsAvailable,
+            setMatching,
+            reset
+        }
+    },
     data() {
         return {
             timeout: 0
         }
-    },
-    methods: {
-        ...mapMutations(['setMatching']),
-        reset() {
-            this.setMatching(undefined);
-        }
     }
-
 }
 </script>

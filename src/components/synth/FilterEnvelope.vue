@@ -54,13 +54,25 @@
 import Tone from "tone";
 import axios from "axios";
 import Nexus from "nexusui";
-import {mapGetters, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
 import FilterEnvelopeMixin from '@/mixins/FilterEnvelopeMixin';
 import UIMixin from '@/mixins/UIMixin';
 
 export default {
     name: 'FilterEnvelope',
     mixins: [FilterEnvelopeMixin, UIMixin],
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const userSynthData = computed(() => synthsStore.userSynthData)
+        const userSynth = computed(() => synthsStore.userSynth)
+
+        return {
+            userSynthData,
+            userSynth
+        }
+    },
     data() {
         return {
             startPoint: { x: 0.01, y: 0.01 },
@@ -69,7 +81,6 @@ export default {
     created() {
        Nexus.context = Tone.context;
     },
-    computed: mapGetters(['userSynthData','userSynth']),
 
     mounted() {
 

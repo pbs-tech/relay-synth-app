@@ -1,8 +1,5 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import store from '../store'
-
-Vue.use(VueRouter)
+import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/useUserStore'
 
 const routes = [
     {
@@ -74,7 +71,7 @@ const routes = [
 		},
     },
     {
-		path: '*',
+		path: '/:pathMatch(.*)*',
 		name: '404',
 		component: () => import(/* webpackChunkName: "404" */ '../views/error/404.vue'),
 		meta: {
@@ -83,16 +80,15 @@ const routes = [
 	}
   ]
 
-  const router = new VueRouter({
-    mode: 'history',
-    base: process.env.BASE_URL,
+  const router = createRouter({
+    history: createWebHistory(process.env.BASE_URL),
     routes,
-
   })
 
   router.beforeEach((to, from, next) =>  {
     if (to.matched.some(record => record.meta.requiresAuth)) {
-      if (store.getters.isLoggedIn) {
+      const userStore = useUserStore()
+      if (userStore.isLoggedIn) {
         next();
         return;
       }

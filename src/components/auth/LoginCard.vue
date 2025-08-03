@@ -47,12 +47,19 @@
     </v-container>
 </template>
 <script>
-import { validationMixin } from "vuelidate";
-import { required, email } from "vuelidate/lib/validators";
-import { mapActions } from "vuex"
+import { useVuelidate } from "@vuelidate/core";
+import { required, email } from "@vuelidate/validators";
+import { useUserStore } from "@/stores/useUserStore"
 export default {
     
     name: "LoginCard",
+    setup() {
+        const userStore = useUserStore()
+        return { 
+            v$: useVuelidate(),
+            userStore
+        }
+    },
     data() {
         return {
             showPassword: false,
@@ -62,26 +69,34 @@ export default {
             },
             alert: false
         };
-    }, methods : {
-        ...mapActions(['login']),
+    }, 
+    validations() {
+        return {
+            loginData: {
+                email: {
+                    required,
+                    email
+                },
+                password: {
+                    required
+                }
+            }
+        }
+    },
+    methods : {
         loginUser() {
+            this.v$.$touch();
+            if (this.v$.$invalid) {
+                return;
+            }
             let email = this.loginData.email;
             let password = this.loginData.password;
-            this.login({ email, password })
+            this.userStore.login({ email, password })
             .then(() => {
                 this.$router.push('/')
                 this.$router.go();
             })
             .catch(err => this.alert = true);           
-        }
-    }, validations: {
-        loginData: {
-            email: {
-                required
-            },
-            password: {
-                required
-            }
         }
     }
 }

@@ -49,12 +49,33 @@
     </nav>
  </template>
 <script>
-import { mapGetters,  mapActions } from 'vuex';
+import { useUserStore } from '@/stores/useUserStore'
+import { useTutorialsStore } from '@/stores/useTutorialsStore'
     
 export default {
     name: 'Nav',
-
-    computed:  mapGetters(['isLoggedIn','tutorialCount','userEmail','userScore', 'tutorialsCompletedCount']),
+    setup() {
+        const userStore = useUserStore()
+        const tutorialsStore = useTutorialsStore()
+        return { userStore, tutorialsStore }
+    },
+    computed: {
+        isLoggedIn() {
+            return this.userStore.isLoggedIn
+        },
+        tutorialCount() {
+            return this.tutorialsStore.tutorialCount
+        },
+        userEmail() {
+            return this.userStore.userEmail
+        },
+        userScore() {
+            return this.userStore.userScore
+        },
+        tutorialsCompletedCount() {
+            return this.userStore.tutorialsCompletedCount
+        }
+    },
     data() {
         return {
             componentKey: 0,
@@ -69,12 +90,11 @@ export default {
         }
     },
     mounted() {
-        this.fetchTutorialCount();
+        this.tutorialsStore.fetchTutorialCount()
     },
     methods: {
-        ...mapActions(['fetchTutorialCount','logout']),
         logoutUser() {
-            this.logout().then(() => {
+            this.userStore.logout().then(() => {
                 this.$router.push('/')
             })
         },

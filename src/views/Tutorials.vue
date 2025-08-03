@@ -16,17 +16,28 @@
 
 <script>
 import TutorialList from '@/components/tutorial/list/TutorialList';
-import { mapGetters, mapActions } from 'vuex';
+import { computed } from 'vue'
+import { useTutorialsStore } from '@/stores/useTutorialsStore'
 
 export default {
     name: 'Tutorials',
     components: {
         TutorialList
     },
-    methods: {
-      ...mapActions(['fetchTitles'])
+    setup() {
+        const tutorialsStore = useTutorialsStore()
+
+        const tutorialTitles = computed(() => tutorialsStore.tutorialTitles)
+
+        const fetchTitles = () => {
+            return tutorialsStore.fetchTitles()
+        }
+
+        return {
+            tutorialTitles,
+            fetchTitles
+        }
     },
-    computed: mapGetters(['tutorialTitles']),
     created() {
       this.fetchTitles();
     }

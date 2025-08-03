@@ -18,9 +18,29 @@
     </v-container>
 </template>
 <script>
-import { mapGetters, mapActions } from "vuex";
+import { computed } from 'vue'
+import { useLeaderboardStore } from '@/stores/useLeaderboardStore'
+import { useTutorialsStore } from '@/stores/useTutorialsStore'
+
 export default {
 	name: "leaderboard",
+	setup() {
+		const leaderboardStore = useLeaderboardStore()
+		const tutorialsStore = useTutorialsStore()
+
+		const userScores = computed(() => leaderboardStore.userScores)
+		const tutorialCount = computed(() => tutorialsStore.tutorialCount)
+
+		const fetchScores = () => {
+			return leaderboardStore.fetchScores()
+		}
+
+		return {
+			userScores,
+			tutorialCount,
+			fetchScores
+		}
+	},
 	data() {
 		return {
 			search: '',
@@ -38,7 +58,6 @@ export default {
 		}
 	},
 	methods: {
-		...mapActions(["fetchScores"]),
 		calculateRank(index) {
 			return index++
 		},
@@ -46,8 +65,6 @@ export default {
 			return 'test'
 		}
 	},
-	computed: 
-	mapGetters(["userScores", "tutorialCount"]),
 	created() {
 		this.fetchScores();
 	}

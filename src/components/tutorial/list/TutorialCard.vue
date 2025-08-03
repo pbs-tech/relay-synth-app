@@ -23,13 +23,22 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
 
 export default {
 	name: 'TutorialCard',
 	props: {
 		tutorial: Object
+	},
+	setup() {
+		const userStore = useUserStore()
+
+		const tutorialsCompleted = computed(() => userStore.tutorialsCompleted)
+
+		return {
+			tutorialsCompleted
+		}
 	},
 	methods: {
         isTutorialTitleComplete(number) {
@@ -39,7 +48,6 @@ export default {
                 return false;
             }
 		}
-	},
-	computed: mapGetters(['tutorialsCompleted'])
+	}
 }
 </script>

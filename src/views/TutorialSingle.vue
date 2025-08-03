@@ -52,8 +52,8 @@
 </template>
 
 <script>
-
-import { mapGetters, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
 import Tone from "tone";
 import axios from "axios";
 import Nexus from "nexusui";
@@ -83,20 +83,40 @@ export default {
         FilterEnvelope
 
     },
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const envRequired = computed(() => synthsStore.envRequired)
+        const filterRequired = computed(() => synthsStore.filterRequired)
+        const oscRequired = computed(() => synthsStore.oscRequired)
+        const filterEnvRequired = computed(() => synthsStore.filterEnvRequired)
+        const showAnswer = computed(() => synthsStore.showAnswer)
+        const tutorialParams = computed(() => synthsStore.tutorialParams)
+
+        const resetTutorial = () => {
+            synthsStore.resetTutorial()
+        }
+
+        return {
+            envRequired,
+            filterRequired,
+            oscRequired,
+            filterEnvRequired,
+            showAnswer,
+            tutorialParams,
+            resetTutorial
+        }
+    },
     data() {
         return {
             answer: "",
         }
     },
-    computed: mapGetters(['envRequired', 'filterRequired','oscRequired',,'filterEnvRequired','showAnswer','tutorialParams']),
     created() {
         this.tutorialId = this.$route.params.id;
         Nexus.colors.accent = this.$vuetify.theme.themes.light.primary; 
         Nexus.context = Tone.context;
    
-    },
-    methods: {
-        ...mapMutations(['resetTutorial'])
     },
     destroyed() {
         this.resetTutorial();

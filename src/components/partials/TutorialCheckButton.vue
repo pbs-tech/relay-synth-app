@@ -8,24 +8,64 @@
     </v-fab-transition>
 </template>
 <script>
-import { mapActions, mapGetters, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
+import { useUserStore } from '@/stores/useUserStore'
+import { useTutorialStore } from '@/stores/useTutorialStore'
 
 export default {
     name: 'TutorialCheckButton',
-    computed:  mapGetters(['correct', 'incorrect', 'pointsAvailable', 'tutorialComplete', 'matching']),
     props: {
         tutorialId: String,
     },
-    methods: {
-        ...mapActions(['checkAnswer','updateScore', 'updateTutorialsCompleted', 'isTutorialComplete']),
-        onCheckAnswerClicked() {
-            this.checkAnswer();
-            if(this.matching === true && this.tutorialComplete === false) {
-                this.updateScore(this.pointsAvailable);
-                this.updateTutorialsCompleted(this.tutorialId);
+    setup(props) {
+        const synthsStore = useSynthsStore()
+        const userStore = useUserStore()
+        const tutorialStore = useTutorialStore()
+
+        const correct = computed(() => synthsStore.matching === true)
+        const incorrect = computed(() => synthsStore.matching === false)
+        const pointsAvailable = computed(() => tutorialStore.pointsAvailable)
+        const tutorialComplete = computed(() => userStore.tutorialComplete)
+        const matching = computed(() => synthsStore.matching)
+
+        const checkAnswer = () => {
+            return synthsStore.checkAnswer()
+        }
+
+        const updateScore = (score) => {
+            return userStore.updateScore(score)
+        }
+
+        const updateTutorialsCompleted = (tutorialId) => {
+            return userStore.updateTutorialsCompleted(tutorialId)
+        }
+
+        const isTutorialComplete = (tutorialId) => {
+            return userStore.isTutorialComplete(tutorialId)
+        }
+
+        const onCheckAnswerClicked = () => {
+            checkAnswer()
+            if(matching.value === true && tutorialComplete.value === false) {
+                updateScore(pointsAvailable.value)
+                updateTutorialsCompleted(props.tutorialId)
             }
-        },
-    },
+        }
+
+        return {
+            correct,
+            incorrect,
+            pointsAvailable,
+            tutorialComplete,
+            matching,
+            checkAnswer,
+            updateScore,
+            updateTutorialsCompleted,
+            isTutorialComplete,
+            onCheckAnswerClicked
+        }
+    }
 }
 </script>
     

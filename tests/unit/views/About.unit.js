@@ -1,11 +1,17 @@
 import { expect } from 'chai'
 import { shallowMount } from '@vue/test-utils'
 import About from '@/views/About.vue'
+import { createPinia } from 'pinia'
 describe('About.vue', () => {
 	let page;
 
 	beforeEach( function() {
-		page = shallowMount(About);
+		page = shallowMount(About, {
+            global: {
+                plugins: [createPinia()],
+                stubs: ['router-link', 'router-view']
+            }
+        });
 	})
 	it('renders page title', function() {
 		expect(page.find('#about-title').exists()).to.be.true;
