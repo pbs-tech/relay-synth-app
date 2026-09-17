@@ -33,5 +33,9 @@ current Cypress, moving the specs to `cypress/e2e`, replacing `cypress.json` wit
 `cypress.config.js`, and re-adding `@cypress/code-coverage`. The spec sources
 themselves have been updated to read state from Pinia rather than Vuex.
 
+The specs read their login credentials from `Cypress.env()`, never from source.
+Copy `cypress.env.example.json` to `cypress.env.json` (git-ignored) and fill it
+in, or pass `CYPRESS_testEmail` / `CYPRESS_testPassword` in the environment.
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

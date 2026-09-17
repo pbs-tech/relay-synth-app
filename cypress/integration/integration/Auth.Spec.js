@@ -1,3 +1,8 @@
+// Credentials come from cypress.env.json (git-ignored) or CYPRESS_* env vars.
+// See cypress.env.example.json.
+const testEmail = Cypress.env('testEmail');
+const testPassword = Cypress.env('testPassword');
+
 let user;
 let token;
 const getPiniaStore = (storeName) => cy.window().then((win) => {
@@ -8,13 +13,12 @@ const getPiniaStore = (storeName) => cy.window().then((win) => {
 describe('JWT', () => {
     before(function fetchUser() {
         cy.request('POST', 'https://localhost:8000/login', {
-            email: "alex_peebles@outlook.com",
-            password: "***REMOVED***"
+            email: testEmail,
+            password: testPassword
         }).its('body')
         .as('currentUser')
         .then((res) => {
             user = res.user;
-            cy.log(res.user);   
             token = res.token; 
         })
     })
@@ -44,13 +48,12 @@ describe('JWT', () => {
         })
         .its('body')
         .should('include',  {
-            email: 'alex_peebles@outlook.com'
+            email: testEmail
         })
     }) 
     it('Allows user onto routes requiring authentication', function() {
-        cy.log(token);
         getPiniaStore('user').then((userStore) => {
-            userStore.login({ email: 'alex_peebles@outlook.com', password: '***REMOVED***' });
+            userStore.login({ email: testEmail, password: testPassword });
         })
         getPiniaStore('user').then((userStore) => {
             expect(userStore.isLoggedIn).to.be.true;

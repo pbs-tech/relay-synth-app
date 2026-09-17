@@ -1,3 +1,5 @@
+let email;
+
 beforeEach(function(){ 
         email = `test${Date.now()}@test.com`
 })

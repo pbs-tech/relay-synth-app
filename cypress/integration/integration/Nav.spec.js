@@ -1,3 +1,8 @@
+// Credentials come from cypress.env.json (git-ignored) or CYPRESS_* env vars.
+// See cypress.env.example.json.
+const testEmail = Cypress.env('testEmail');
+const testPassword = Cypress.env('testPassword');
+
 describe('Nav (routes with no auth required)', function() {
     it('Opens navigation drawer', function() {
         cy.visit('/');
@@ -39,8 +44,7 @@ describe('Nav (routes with auth required)', function() {
             .its('app')
         })  
         getStore('user').then((store) => {
-            store.login({ email: 'alex_peebles@outlook.com',
-            password: '***REMOVED***'});
+            store.login({ email: testEmail, password: testPassword });
         })
         getStore('user').its('isLoggedIn').should('eq', true);
 

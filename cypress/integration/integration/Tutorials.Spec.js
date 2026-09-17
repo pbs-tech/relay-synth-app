@@ -1,3 +1,7 @@
+// Credentials come from cypress.env.json (git-ignored) or CYPRESS_* env vars.
+// See cypress.env.example.json.
+const testEmail = Cypress.env('testEmail');
+const testPassword = Cypress.env('testPassword');
 
 const getStore = (storeName) => cy.window().then((win) => {
     const pinia = win.app.config.globalProperties.$pinia;
@@ -12,8 +16,7 @@ describe('Tutorials', function() {
             .its('app')
         })  
         getStore('user').then((store) => {
-            store.login({ email: 'alex_peebles@outlook.com',
-            password: '***REMOVED***'});
+            store.login({ email: testEmail, password: testPassword });
         })
         getStore('user').its('isLoggedIn').should('eq', true);
 

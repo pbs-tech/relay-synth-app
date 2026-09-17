@@ -35,7 +35,10 @@ module.exports = {
       },
       globals: {
         cy: 'readonly',
-        Cypress: 'readonly'
+        Cypress: 'readonly',
+        // Cypress bundles chai as globals
+        expect: 'readonly',
+        assert: 'readonly'
       }
     }
   ]
