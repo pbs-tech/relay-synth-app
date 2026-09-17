@@ -26,7 +26,10 @@ describe('Nav (routes with no auth required)', function() {
         cy.contains('Signup');
     })
 })
-const getStore = () => cy.window().its('app.$store');
+const getStore = (storeName) => cy.window().then((win) => {
+    const pinia = win.app.config.globalProperties.$pinia;
+    return pinia._s.get(storeName);
+});
 
 describe('Nav (routes with auth required)', function() {
     beforeEach(function() {
@@ -35,11 +38,11 @@ describe('Nav (routes with auth required)', function() {
             cy.window()
             .its('app')
         })  
-        getStore().then((store) => {
-            store.dispatch('login', { email: 'alex_peebles@outlook.com',
+        getStore('user').then((store) => {
+            store.login({ email: 'alex_peebles@outlook.com',
             password: '***REMOVED***'});
         })
-        getStore().its('getters.isLoggedIn').should('eq', true);
+        getStore('user').its('isLoggedIn').should('eq', true);
 
     })
     beforeEach( function() {

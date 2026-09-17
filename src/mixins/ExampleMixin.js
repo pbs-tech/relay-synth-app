@@ -1,4 +1,4 @@
-import Tone from "tone";
+import * as Tone from "tone";
 
 export default {
     data() {
@@ -9,9 +9,11 @@ export default {
         }
     },
     methods: {
-        toggleExample(synth, play, example) {
+        async toggleExample(synth, play, example) {
             play = !play;
             if(play === true) {
+                // Tone v14 will not schedule anything until the context is running.
+                await Tone.start();
                 let note = example.note ? example.note : this.defaultNote;
                 let duration = example.duration ? example.duration: this.defaultDuration;
                 let interval = example.interval ? example.interval: this.defaultInterval;

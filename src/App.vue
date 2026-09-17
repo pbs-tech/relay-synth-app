@@ -1,6 +1,6 @@
 <template>
-	<v-app class="background">
-	<Nav/>
+	<v-app class="bg-background">
+	<NavBar/>
 		<v-main>
 			<router-view></router-view>
 		</v-main>
@@ -9,27 +9,34 @@
 
 <script>
 
-import Nav from '@/components/partials/Nav'
+import NavBar from '@/components/partials/NavBar'
+import { useUserStore } from '@/stores/useUserStore'
 
 
 export default {
 	name: 'App',
-  	components: { Nav },
-  	created: 
-  	function(){
- 		this.$http.interceptors.response.use(undefined, function(err) {
-      		return new Promise(function (resolve, reject) {
-        		if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
-          			this.$store.dispatch(logout);
-        		}
-        		throw err;
-      		});
-    	});
-	  },
-	  watch: {
-		  $route(to, from) {
-			  document.title = 'Relay Synth - ' +  `${to.meta.title}` || 'Relay Synth'
-		  }
-	  }
+	components: { NavBar },
+	setup() {
+		const userStore = useUserStore()
+		return { userStore }
+	},
+	created() {
+		this.$http.interceptors.response.use(undefined, (err) => {
+			// axios reports the status on err.response, not on err itself.
+			if (err.response && err.response.status === 401 && err.config && !err.config.__isRetryRequest) {
+				this.userStore.logout().then(() => {
+					if (this.$route.path !== '/login') {
+						this.$router.push('/login')
+					}
+				})
+			}
+			return Promise.reject(err)
+		})
+	},
+	watch: {
+		$route(to) {
+			document.title = to.meta.title ? 'Relay Synth - ' + to.meta.title : 'Relay Synth'
+		}
+	}
 };
 </script>

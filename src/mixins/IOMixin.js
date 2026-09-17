@@ -3,6 +3,8 @@ import Nexus from "nexusui";
 export default {
     data() {
         return {
+            keyDownHandler: null,
+            keyUpHandler: null,
             keyMap: new Map([
                 ['Z', 48 ], ['S', 49 ], ['X', 50 ], ['D', 51 ], ['C', 52 ], ['V', 53 ],
                 ['G', 54 ], ['B', 55 ], ['H', 56 ], ['N', 57 ], ['J', 58 ], ['M', 59 ],['¼',60],
@@ -15,7 +17,7 @@ export default {
 
     methods: {
         setKeysDown(synth, piano) {
-            window.addEventListener("keydown", e => {
+            this.keyDownHandler = e => {
                 let key = String.fromCharCode(e.keyCode)
                 if (this.keyMap.has(key) && !this.inputMap.has(key)) {
                     let noteValue = this.keyMap.get(key)
@@ -23,11 +25,11 @@ export default {
                     this.inputMap.set(key, noteValue);
                     piano.toggleKey(noteValue, true);
                 }
-    
-            })
+            };
+            window.addEventListener("keydown", this.keyDownHandler);
         },
         setKeysUp(synth, piano) {
-            window.addEventListener("keyup", e => {
+            this.keyUpHandler = e => {
                 let key = String.fromCharCode(e.keyCode)
                 if (this.inputMap.has(key)) {
                     let noteValue = this.keyMap.get(key)
@@ -35,7 +37,18 @@ export default {
                     this.inputMap.delete(key);
                     piano.toggleKey(noteValue, false);    
                 }
-            })
+            };
+            window.addEventListener("keyup", this.keyUpHandler);
+        },
+        removeKeyListeners() {
+            if (this.keyDownHandler) {
+                window.removeEventListener("keydown", this.keyDownHandler);
+                this.keyDownHandler = null;
+            }
+            if (this.keyUpHandler) {
+                window.removeEventListener("keyup", this.keyUpHandler);
+                this.keyUpHandler = null;
+            }
         }
     }
 

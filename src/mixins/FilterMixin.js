@@ -10,7 +10,7 @@ export default {
             let filterType;
             select.on('change', function(v) {
                 switch (v.value) {
-                    case 'Filter Type 1':
+                    case 'Filter Type 1': {
                         let bp1 = envelope.points[0];
                         let bp2 = envelope.points[1];
                         let bp3 = {x: 0.5 + (bp2.x / 2) , y: bp2.y }
@@ -31,18 +31,21 @@ export default {
                         }
                         filterType = "bandpass"
                         break;
-                    case 'Filter Type 2':
+                    }
+                    case 'Filter Type 2': {
                         let lp1 = envelope.points[0];
                         let lp2 = envelope.points[1];
                         envelope.setPoints([lp2, lp1]);
                         filterType = "lowpass"
                         break;
-                    case 'Filter Type 3':
+                    }
+                    case 'Filter Type 3': {
                         let hp1 = envelope.points[0];
                         let hp2 = envelope.points[1];
                         envelope.setPoints([hp2, hp1]);
                         filterType = 'highpass'
                         break;
+                    }
                     case 'No Filter': 
                         envelope.setPoints([]);
                 } 

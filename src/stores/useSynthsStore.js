@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue'
 import axios from 'axios'
-import Tone from 'tone'
+import * as Tone from 'tone'
 import synthTypes from '../util/SynthTypes'
 
 export const useSynthsStore = defineStore('synths', {
   state: () => ({
     polyphony: 1,
-    synthType: '',
+    synthType: null,
     tutorialSynth: null,
     userSynth: null,
     DEFAULT_VOLUME: -20,
@@ -15,26 +16,11 @@ export const useSynthsStore = defineStore('synths', {
     filterEnvRequired: false,
     oscRequired: false,
     matching: undefined,
-    userParams: {},
-    tutorialParams: {},
+    userParams: '',
+    tutorialParams: '',
     noOfGuesses: 0,
     showAnswer: false
   }),
-
-  getters: {
-    tutorialSynthData: (state) => state.tutorialSynthData,
-    tutorialSynth: (state) => state.tutorialSynth,
-    userSynth: (state) => state.userSynth,
-    userSynthData: (state) => state.userSynthData,
-    matching: (state) => state.matching,
-    filterRequired: (state) => state.filterRequired,
-    filterEnvRequired: (state) => state.filterEnvRequired,
-    envRequired: (state) => state.envRequired,
-    oscRequired: (state) => state.oscRequired,
-    noOfGuesses: (state) => state.noOfGuesses,
-    showAnswer: (state) => state.showAnswer,
-    tutorialParams: (state) => state.tutorialParams
-  },
 
   actions: {
     async fetchTutorialSynthData(tutorialId) {
@@ -44,57 +30,62 @@ export const useSynthsStore = defineStore('synths', {
     },
 
     async fetchSynthBase(tutorialId) {
-      console.log('fetching synth settings')
       const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/synth/settings')
       this.setSynthBase(response.data)
     },
 
     async checkAnswer() {
+      const userParts = []
+      const tutorialParts = []
+
+      const compare = (key) => {
+        userParts.push(JSON.stringify(this.userSynth.get()[key]))
+        tutorialParts.push(JSON.stringify(this.tutorialSynth.get()[key]))
+      }
+
       if (this.oscRequired) {
-        this.userParams = JSON.stringify(this.userSynth.get().oscillator.type)
-        this.tutorialParams = JSON.stringify(this.tutorialSynth.get().oscillator.type)
+        userParts.push(JSON.stringify(this.userSynth.get().oscillator.type))
+        tutorialParts.push(JSON.stringify(this.tutorialSynth.get().oscillator.type))
       }
       if (this.envRequired) {
-        this.userParams = this.userParams.concat(JSON.stringify(this.userSynth.get().envelope))
-        this.tutorialParams = this.tutorialParams.concat(JSON.stringify(this.tutorialSynth.get().envelope))
+        compare('envelope')
       }
       if (this.filterRequired) {
-        this.userParams = this.userParams.concat(JSON.stringify(this.userSynth.get().filter))
-        this.tutorialParams = this.tutorialParams.concat(JSON.stringify(this.tutorialSynth.get().filter))
+        compare('filter')
       }
       if (this.filterEnvRequired) {
-        this.userParams = this.userParams.concat(JSON.stringify(this.userSynth.get().filterEnvelope))
-        this.tutorialParams = this.tutorialParams.concat(JSON.stringify(this.tutorialSynth.get().filterEnvelope))
+        compare('filterEnvelope')
       }
-      console.log(this.userParams)
-      console.log(this.tutorialParams)
-      if (this.userParams === this.tutorialParams) {
-        this.setMatching(true)
-      } else {
-        this.setMatching(false)
-      }
+
+      this.userParams = userParts.join('')
+      this.tutorialParams = tutorialParts.join('')
+      this.setMatching(this.userParams === this.tutorialParams)
     },
 
     setSynthBase(synthData) {
       this.polyphony = synthData.polyphony
-      this.synthType = synthTypes.get(synthData.type)
+      // Tone voice classes are constructors, never reactive data.
+      this.synthType = markRaw(synthTypes.get(synthData.type))
     },
 
     setUserSynth() {
-      this.userSynth = new Tone.PolySynth(1, Tone.MonoSynth).toMaster()
-      this.userSynth.volume.value = this.DEFAULT_VOLUME
+      // Tone v14 dropped the voice-count argument: new PolySynth(voice, options).
+      const synth = new Tone.PolySynth(Tone.MonoSynth).toDestination()
+      synth.volume.value = this.DEFAULT_VOLUME
+      this.userSynth = markRaw(synth)
     },
 
     setTutorialSynth(tutorialSynthData) {
-      this.tutorialSynth = new Tone.PolySynth(1, Tone.MonoSynth, tutorialSynthData.parameters).toMaster()
-      this.tutorialSynth.volume.value = this.DEFAULT_VOLUME
+      const synth = new Tone.PolySynth(Tone.MonoSynth, tutorialSynthData.parameters).toDestination()
+      synth.volume.value = this.DEFAULT_VOLUME
+      this.tutorialSynth = markRaw(synth)
     },
 
     setRequirements(parameters) {
-      this.oscRequired = parameters.hasOwnProperty('oscillator')
-      this.envRequired = parameters.hasOwnProperty('envelope')
-      this.filterRequired = parameters.hasOwnProperty('filter')
-      this.filterEnvRequired = parameters.hasOwnProperty('filterEnvelope')
+      this.oscRequired = Object.prototype.hasOwnProperty.call(parameters, 'oscillator')
+      this.envRequired = Object.prototype.hasOwnProperty.call(parameters, 'envelope')
+      this.filterRequired = Object.prototype.hasOwnProperty.call(parameters, 'filter')
+      this.filterEnvRequired = Object.prototype.hasOwnProperty.call(parameters, 'filterEnvelope')
     },
 
     setMatching(matching) {
@@ -106,6 +97,7 @@ export const useSynthsStore = defineStore('synths', {
 
     resetTutorial() {
       this.matching = undefined
+      this.userParams = ''
       this.tutorialParams = ''
       this.showAnswer = false
       this.noOfGuesses = 0
@@ -116,7 +108,6 @@ export const useSynthsStore = defineStore('synths', {
     },
 
     setShowAnswer(showAnswer) {
-      console.log('showing answer')
       this.showAnswer = showAnswer
     }
   }

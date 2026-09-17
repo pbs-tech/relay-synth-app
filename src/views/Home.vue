@@ -1,15 +1,14 @@
 <template>
-  	<div class="home">
-    	<v-container fluid class="ma-0 pa-0">
-			<v-layout row wrap>
+	<div class="home">
+		<v-container fluid class="ma-0 pa-0">
 				<v-row no-gutters>
 					<v-col fixed>
 						<v-img id="home-image" aspect-ratio= "1" min-width="360" class="align-center" src='../assets/img/home.jpg'>
-						<v-flex id="home-image-overlay" class="primary background--text display-3 text-center py-3">Relay Synth</v-flex></v-img>
+						<div id="home-image-overlay" class="bg-primary text-background text-h2 text-center py-3">Relay Synth</div></v-img>
 					</v-col>
 					<v-col>
 						<v-row>
-							<h1 id='home-title' class="display-3 pa-6 secondary--text">Home</h1>
+							<h1 id='home-title' class="text-h2 pa-6 text-secondary">Home</h1>
 						</v-row>
 						<v-row justify="center" align="center">
 							<v-container  id="home-text" class="pa-5 ma-auto">
@@ -21,10 +20,10 @@
 									</v-col>
 									<v-container class="d-flex justify-end px-5">
 										<router-link to="/tutorials">
-											<v-btn id="tutorial-button" width="125" large class="ma-1 primary">tutorials</v-btn>
+											<v-btn id="tutorial-button" width="125" size="large" color="primary" class="ma-1">tutorials</v-btn>
 										</router-link>
 										<router-link to="/play">
-											<v-btn id="play-button" width="125" large class="ma-1 primary">play</v-btn>
+											<v-btn id="play-button" width="125" size="large" color="primary" class="ma-1">play</v-btn>
 										</router-link>
 									</v-container>
 								</v-row>
@@ -32,9 +31,8 @@
 						</v-row>
 					</v-col>
 				</v-row>
-			</v-layout>
-    	</v-container>
- 	</div>
+		</v-container>
+	</div>
 </template>
 <script>
 

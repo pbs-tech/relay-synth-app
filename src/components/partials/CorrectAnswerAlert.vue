@@ -1,14 +1,14 @@
 <template>
     <v-snackbar
-    color="green"
-    :top="true"
-    :value="matching === true"
+    color="success"
+    location="top"
+    :model-value="matching === true"
     :timeout="timeout">
             <span class="font-weight-bold"> Correct!! You have completed this tutorial. </span>
             <span v-if="!tutorialComplete"> + {{ pointsAvailable }} </span>
             <v-btn
             color="white"
-            text
+            variant="text"
             @click="reset()"
             > 
                 Close
@@ -50,7 +50,7 @@ export default {
     },
     data() {
         return {
-            timeout: 0
+            timeout: -1
         }
     }
 }

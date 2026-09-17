@@ -8,10 +8,6 @@ export const useTutorialsStore = defineStore('tutorials', {
     tutorialCount: 0
   }),
 
-  getters: {
-    // Convert state properties to getters for compatibility
-  },
-
   actions: {
     async fetchTitles() {
       const response = await axios.get('https://api.relay-synth.tech/tutorials/titles')
@@ -25,10 +21,6 @@ export const useTutorialsStore = defineStore('tutorials', {
 
     setTutorialText(tutorialText) {
       this.tutorialText = tutorialText
-    },
-
-    setPointsAvailable(pointsAvailable) {
-      this.pointsAvailable = pointsAvailable
     }
   }
 })

@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import { shallowMount } from '@vue/test-utils'
+import { createTestRouter } from '../helpers/router'
 import About from '@/views/About.vue'
 import { createPinia } from 'pinia'
 describe('About.vue', () => {
@@ -8,9 +9,8 @@ describe('About.vue', () => {
 	beforeEach( function() {
 		page = shallowMount(About, {
             global: {
-                plugins: [createPinia()],
-                stubs: ['router-link', 'router-view']
-            }
+                plugins: [createPinia(), createTestRouter()],
+                            }
         });
 	})
 	it('renders page title', function() {

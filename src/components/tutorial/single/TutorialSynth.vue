@@ -5,9 +5,7 @@
         <div>
             <v-btn
             id="tutorial-play-button"
-            v-model="playButton"
-            fab
-            dark
+            icon
             @click="onExampleClick()"
             color="primary"
             class="ma-5">
@@ -19,14 +17,14 @@
                 </v-icon>
             </v-btn>
             <v-row align="center" justify="center">
-                <h3 class="title  dark--text pa-5"> Example Volume </h3> 
-                    <v-tooltip top>
-                    <template v-slot:activator="{ on }">
-                        <v-btn icon v-on="on">
+                <h3 class="text-h6 text-dark pa-5"> Example Volume </h3> 
+                    <v-tooltip location="top">
+                    <template v-slot:activator="{ props }">
+                        <v-btn icon v-bind="props">
                             <v-icon color="secondary">mdi-help-circle</v-icon>
                         </v-btn>
                     </template>
-                    <span class="body-2"> Changes the volume of the tutorial synth </span>
+                    <span class="text-body-2"> Changes the volume of the tutorial synth </span>
                     </v-tooltip>
             </v-row>
             <div id="tutorial-volume-slider"></div>
@@ -34,8 +32,7 @@
     </div>
 </template>
 <script>
-import Nexus from "nexusui";
-import Tone from "tone";
+import * as Tone from "tone";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import { useExampleStore } from '@/stores/useExampleStore'
@@ -53,7 +50,6 @@ export default {
         const synthsStore = useSynthsStore()
         const exampleStore = useExampleStore()
 
-        const tutorialSynthData = computed(() => synthsStore.tutorialSynthData)
         const tutorialSynth = computed(() => synthsStore.tutorialSynth)
         const example = computed(() => exampleStore.example)
 
@@ -66,7 +62,6 @@ export default {
         }
 
         return {
-            tutorialSynthData,
             tutorialSynth,
             example,
             fetchTutorialSynthData,
@@ -93,16 +88,15 @@ export default {
             this.oscilloscope = this.createOsc("tutorial-osc");
             this.volumeSlider =  this.createVolumeSlider("tutorial-volume-slider");
         },
-        onExampleClick() {
-            this.playButton = this.toggleExample(this.tutorialSynth, this.playButton, this.example);
+        async onExampleClick() {
+            this.playButton = await this.toggleExample(this.tutorialSynth, this.playButton, this.example);
         }
     },
-    destroyed() {
+    unmounted() {
         Tone.Transport.cancel();
         Tone.Transport.stop();
         this.oscilloscope.destroy();
         this.volumeSlider.destroy();
-        this.volumeNumber.destroy();
         this.piano.destroy();
     }  
 }

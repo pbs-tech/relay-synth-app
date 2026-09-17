@@ -1,6 +1,6 @@
 <template>
     <v-container class="my-5">
-		<h1 class="display-3 secondary--text">Leaderboard</h1>
+		<h1 class="text-h2 text-secondary">Leaderboard</h1>
 		<v-text-field
 			id="search-field"
 			v-model="search"
@@ -46,23 +46,15 @@ export default {
 			search: '',
 			headers: [
 				{
-					text: 'Rank',
+					title: 'Rank',
 					align: 'start',
 					sortable: false,
-					value: 'rank'
+					key: 'rank'
 				},
-				{ text: 'Email', value: 'email'},
-				{ text: 'Total Score', value: 'totalScore'},
-				{ text: 'Tutorials Completed', value: 'tutorialsCompleted.length'}
+				{ title: 'Email', key: 'email'},
+				{ title: 'Total Score', key: 'totalScore'},
+				{ title: 'Tutorials Completed', key: 'tutorialsCompleted.length'}
 			],
-		}
-	},
-	methods: {
-		calculateRank(index) {
-			return index++
-		},
-		test() {
-			return 'test'
 		}
 	},
 	created() {

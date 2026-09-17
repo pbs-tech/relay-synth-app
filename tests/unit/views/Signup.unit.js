@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import { shallowMount } from '@vue/test-utils'
+import { createTestRouter } from '../helpers/router'
 import Signup from '@/views/Signup.vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useUserStore } from '@/stores/useUserStore'
@@ -27,9 +28,8 @@ describe('Signup.vue', function() {
 	beforeEach( function() {
 		page = shallowMount(Signup, {
             global: {
-                plugins: [createMockPinia()],
-                stubs: ['router-link', 'router-view'],
-                mocks: {
+                plugins: [createMockPinia(), createTestRouter()],
+                                mocks: {
                     $router: {
                         push: () => {},
                         go: () => {}

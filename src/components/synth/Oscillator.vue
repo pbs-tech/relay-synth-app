@@ -1,14 +1,14 @@
 <template>
     <v-container>
         <v-row justify="center" align="center" no-gutters>
-            <h3 class="title pa-5"> Oscillator </h3> 
-            <v-tooltip top>
-                <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on">
+            <h3 class="text-h6 pa-5"> Oscillator </h3> 
+            <v-tooltip location="top">
+                <template v-slot:activator="{ props }">
+                    <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
-                <span class="body-2 background--text"> Changes the sound of the synth and the shape of the visualiser </span>
+                <span class="text-body-2 text-background"> Changes the sound of the synth and the shape of the visualiser </span>
             </v-tooltip>
         </v-row>
         <v-row  justify="center" align="center">      
@@ -17,8 +17,6 @@
     </v-container>
 </template>
 <script>
-import Tone from "tone";
-import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import SynthMixin from '@/mixins/SynthMixin';
@@ -30,7 +28,6 @@ export default {
     setup() {
         const synthsStore = useSynthsStore()
 
-        const userSynthData = computed(() => synthsStore.userSynthData)
         const userSynth = computed(() => synthsStore.userSynth)
 
         const setMatching = (value) => {
@@ -38,7 +35,6 @@ export default {
         }
 
         return {
-            userSynthData,
             userSynth,
             setMatching
         }

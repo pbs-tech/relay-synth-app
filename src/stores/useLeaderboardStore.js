@@ -6,10 +6,6 @@ export const useLeaderboardStore = defineStore('leaderboard', {
     userScores: []
   }),
 
-  getters: {
-    // userScores is already accessible as state
-  },
-
   actions: {
     async fetchScores() {
       const response = await axios.get('https://api.relay-synth.tech/leaderboard')

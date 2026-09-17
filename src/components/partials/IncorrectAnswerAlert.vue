@@ -1,21 +1,21 @@
 <template>
     <v-snackbar
-    color="red"
+    color="error"
     :timeout="timeout"
-    :top="true"
-    :value="matching === false"
+    location="top"
+    :model-value="matching === false"
     class="font-weight-bold">
         Incorrect!! Try playing the example again 
         <v-btn v-if="noOfGuesses >= 3"
         color="background"
-        text
+        variant="text"
         @click="setShowAnswer(true)"
         > 
             Show Answer
         </v-btn>
         <v-btn
         color="background"
-        text
+        variant="text"
         @click="reset()"
         > 
             Close
@@ -56,7 +56,7 @@ export default {
     },
     data() {
         return {
-            timeout: 0,
+            timeout: -1,
         }
     }
 }

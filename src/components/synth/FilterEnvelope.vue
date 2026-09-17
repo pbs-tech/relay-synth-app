@@ -1,10 +1,10 @@
 <template>
     <v-container>
     <v-row align="center" justify="center">
-        <h3 class="title pa-5"> Filter Envelope </h3>
-        <v-tooltip top>
-            <template v-slot:activator="{ on }">
-                <v-btn icon v-on="on">
+        <h3 class="text-h6 pa-5"> Filter Envelope </h3>
+        <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
                     <v-icon color="secondary">mdi-help-circle</v-icon>
                 </v-btn>
             </template>
@@ -17,28 +17,28 @@
         </v-col>
         <v-col>
             <v-row class="py-1 align-center">
-                <h4 id="filter-attack-title" class="subtitle-2"> Attack (ms): </h4> 
+                <h4 id="filter-attack-title" class="text-subtitle-2"> Attack (ms): </h4> 
                 <v-spacer/>
                 <div id="filter-attack-slider"></div>
                 <v-spacer/>
                 <div id="filter-attack-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-decay-title" class="subtitle-2"> Decay (ms): </h4>
+                <h4 id="filter-decay-title" class="text-subtitle-2"> Decay (ms): </h4>
                 <v-spacer/>
                 <div id="filter-decay-slider"></div>
                 <v-spacer/>
                 <div id="filter-decay-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-sustain-title" class="subtitle-2"> Sustain (dB): </h4>
+                <h4 id="filter-sustain-title" class="text-subtitle-2"> Sustain (dB): </h4>
                 <v-spacer/>
                 <div id="filter-sustain-slider"></div>
                 <v-spacer/>
                 <div id="filter-sustain-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-release-title" class="subtitle-2"> Release (ms): </h4> 
+                <h4 id="filter-release-title" class="text-subtitle-2"> Release (ms): </h4> 
                 <v-spacer/>
                 <div id="filter-release-slider"></div>
                 <v-spacer/>
@@ -51,9 +51,6 @@
 
 
 <script>
-import Tone from "tone";
-import axios from "axios";
-import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import FilterEnvelopeMixin from '@/mixins/FilterEnvelopeMixin';
@@ -65,11 +62,9 @@ export default {
     setup() {
         const synthsStore = useSynthsStore()
 
-        const userSynthData = computed(() => synthsStore.userSynthData)
         const userSynth = computed(() => synthsStore.userSynth)
 
         return {
-            userSynthData,
             userSynth
         }
     },
@@ -78,10 +73,6 @@ export default {
             startPoint: { x: 0.01, y: 0.01 },
         }
     },
-    created() {
-       Nexus.context = Tone.context;
-    },
-
     mounted() {
 
         this.initUi();

@@ -1,5 +1,8 @@
 
-const getStore = () => cy.window().its('app.$store');
+const getStore = (storeName) => cy.window().then((win) => {
+    const pinia = win.app.config.globalProperties.$pinia;
+    return pinia._s.get(storeName);
+});
 describe('Leaderboard', () => {
 
     beforeEach(function() {
@@ -8,11 +11,11 @@ describe('Leaderboard', () => {
             cy.window()
             .its('app')
         })  
-        getStore().then((store) => {
-            store.dispatch('login', { email: 'alex_peebles@outlook.com',
+        getStore('user').then((store) => {
+            store.login({ email: 'alex_peebles@outlook.com',
             password: '***REMOVED***'});
         })
-        getStore().its('getters.isLoggedIn').should('eq', true);
+        getStore('user').its('isLoggedIn').should('eq', true);
 
     })
     it('should allow logged in user to visit leaderboard page', function() {
