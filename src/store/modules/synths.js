@@ -13,8 +13,8 @@ const state = {
     filterEnvRequired: false,
     oscRequired: false,
     matching: undefined,
-    userParams: {},
-    tutorialParams: {},
+    userParams: '',
+    tutorialParams: '',
     noOfGuesses: 0,
     showAnswer: false
 
@@ -48,9 +48,11 @@ const actions = {
 
     },
     async checkAnswer({commit}) {
+        state.userParams = '';
+        state.tutorialParams = '';
         if(state.oscRequired) {
-            state.userParams  = JSON.stringify(state.userSynth.get().oscillator.type);
-            state.tutorialParams  = JSON.stringify(state.tutorialSynth.get().oscillator.type);
+            state.userParams = state.userParams.concat(JSON.stringify(state.userSynth.get().oscillator.type));
+            state.tutorialParams = state.tutorialParams.concat(JSON.stringify(state.tutorialSynth.get().oscillator.type));
         }
         if (state.envRequired) {
             state.userParams = state.userParams.concat(JSON.stringify(state.userSynth.get().envelope))
@@ -65,8 +67,6 @@ const actions = {
             state.userParams = state.userParams.concat(JSON.stringify(state.userSynth.get().filterEnvelope))
             state.tutorialParams = state.tutorialParams.concat(JSON.stringify(state.tutorialSynth.get().filterEnvelope))
         }
-        console.log(state.userParams);
-        console.log(state.tutorialParams);
         if (state.userParams === state.tutorialParams) {
             commit('setMatching', true);
         } else {
@@ -122,6 +122,7 @@ const mutations = {
     },
     resetTutorial(state) {
         state.matching = undefined;
+        state.userParams = '';
         state.tutorialParams = '';
         state.showAnswer = false;
         state.noOfGuesses = 0;

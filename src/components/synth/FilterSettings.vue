@@ -21,15 +21,21 @@
                     <v-spacer/>
                     <div id="filter-type-select"></div>
                 </v-row>
+                <v-row class="py-1 align-center">
+                    <h4 id="filter-cutoff-title" class="justify-center subtitle-2"> Cutoff (Hz): </h4>
+                    <v-spacer/>
+                    <div id="filter-cutoff-slider"></div>
+                    <v-spacer/>
+                    <div id="filter-cutoff-value"></div>
+                </v-row>
             </v-col>
         </v-row>
     </v-container>
 </template>
 <script>
 import Tone from "tone";
-import axios from "axios";
 import Nexus from "nexusui";
-import {mapGetters, mapMutations } from 'vuex';
+import {mapGetters } from 'vuex';
 import EnvelopeMixin from '@/mixins/EnvelopeMixin';
 import FilterMixin from '@/mixins/FilterMixin';
 import UIMixin from '@/mixins/UIMixin';
@@ -41,6 +47,7 @@ export default {
         return {
             filterTypes: ["No Filter", "Filter Type 1", "Filter Type 2", "Filter Type 3"],
             FILTER_MAX: 20000,
+            INITIAL_CUTOFF: 5000,
         }
     },
 
@@ -52,17 +59,31 @@ export default {
     mounted() {
         this.initUi();
         this.setFilterType(this.userSynth, this.selectFilterType, this.envelope);
+        // Previously missing. createFilterCutoffSlider and setFilterCutoffListener
+        // both existed but were never called, so the cutoff was permanently
+        // whatever setFilterClickListener applied on mount and no tutorial could
+        // ask for any other value.
+        this.setFilterCutoffListener(this.userSynth, this.cutoffSlider, this.envelope);
     },
     methods: {
         initUi() {
-            let initialCutoffValue = 5000;
+            let initialCutoffValue = this.INITIAL_CUTOFF;
             let filterPlotPoint  = [{x: initialCutoffValue / this.FILTER_MAX, y: 0.65}, {x: initialCutoffValue / this.FILTER_MAX, y: 0.01} ]; 
 
             this.envelope = this.createFilterEnvelope("user-filter-env", filterPlotPoint);
             this.setFilterClickListener(this.userSynth, this.envelope, filterPlotPoint, initialCutoffValue);
             this.selectFilterType = this.createSelect("filter-type-select", this.filterTypes);
-        
+
+            this.cutoffSlider = this.createFilterCutoffSlider("filter-cutoff-slider", initialCutoffValue);
+            this.cutoffValue = this.createNumber("filter-cutoff-value");
+            this.cutoffValue.link(this.cutoffSlider);
         }
+    },
+    destroyed() {
+        if (this.cutoffSlider) this.cutoffSlider.destroy();
+        if (this.cutoffValue) this.cutoffValue.destroy();
+        if (this.selectFilterType) this.selectFilterType.destroy();
+        if (this.envelope) this.envelope.destroy();
     }
 }
 

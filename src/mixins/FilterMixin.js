@@ -56,7 +56,7 @@ export default {
         setFilterCutoffListener(synth, slider, envelope) {
             let filterMax = this.FILTER_MAX;
             slider.on('change', function(v) {
-                v = Math.floor(v * 100) / 100;
+                v = Math.round(v * 100) / 100;
                 if(synth.get().filter.type === 'bandpass') {
                     let y0 = envelope.points[0].y;
                     let y1 = envelope.points[1].y;
