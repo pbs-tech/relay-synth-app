@@ -75,13 +75,16 @@ export default {
         createNumber(name) {
             return Nexus.Add.Number(name);
         },
+        // step 0.05 gives 21 positions across the range. It was 0.25, which left
+        // only 5 reachable values per stage and made every envelope tutorial a
+        // guess between a handful of options.
         createEnvelopeSlider(name, initialValue) {
             return Nexus.Add.Slider(name, {
                 'size': [400,40],
                 'mode': 'absolute',
                 'min': 0,
                 'max': 1,
-                'step': 0.25,
+                'step': 0.05,
                 'value': initialValue
             })
         },
