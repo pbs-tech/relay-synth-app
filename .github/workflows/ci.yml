@@ -1,0 +1,48 @@
+# PR checks for the Vue app. There were none before, which meant a dependency
+# bump could only be judged by reading it; this gives the auto-merge workflow
+# something real to gate on.
+name: CI
+
+on: pull_request
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # vue-cli-service 4 builds with webpack 4, which hashes module ids with md4.
+  # OpenSSL 3 (Node 17 and later) dropped md4 from the default provider, so a
+  # build on a modern Node fails with ERR_OSSL_EVP_UNSUPPORTED. Node 18 plus the
+  # legacy provider is the combination that keeps this toolchain building; the
+  # flag goes away with the Vue 3 / vite migration, not before.
+  NODE_VERSION: '18'
+  NODE_OPTIONS: --openssl-legacy-provider
+
+jobs:
+  application:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # vue-cli-service lint rewrites files in place unless told not to. In CI
+      # the point is to report, so --no-fix keeps it from silently "passing" on
+      # a working tree it just edited and threw away.
+      - name: Lint
+        run: npm run lint -- --no-fix
+
+      - name: Test
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build

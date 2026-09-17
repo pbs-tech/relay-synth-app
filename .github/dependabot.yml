@@ -1,0 +1,84 @@
+# Dependency updates for the npm package at the root and the actions used in
+# .github/workflows.
+#
+# This repository is on Vue 2 with vue-cli 4, both out of support. Nearly every
+# direct dependency has a major behind it that cannot be taken without a
+# framework migration - Vue 3, vite, eslint 9 and so on - so major updates are
+# ignored outright rather than raised as PRs that would be closed unread. When
+# the migration happens, drop the ignore block and the majors come back.
+#
+# Dependabot security alerts are unaffected by this: they are configured
+# separately and still fire on a vulnerable dependency regardless of what
+# version updates are ignored here.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    ignore:
+      # The stack cannot absorb a major without deliberate migration work.
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+    groups:
+      # The @vue/cli-* plugins and cli-service are released as a set and check
+      # each other's versions, so they are only coherent moved together.
+      vue-cli:
+        patterns:
+          - '@vue/cli-*'
+          - 'vue-cli-plugin-*'
+        update-types:
+          - minor
+          - patch
+      vue:
+        patterns:
+          - 'vue'
+          - 'vue-router'
+          - 'vuex'
+          - 'vuetify'
+          - 'vue-template-compiler'
+        update-types:
+          - minor
+          - patch
+      production-dependencies:
+        dependency-type: production
+        exclude-patterns:
+          - 'vue'
+          - 'vue-router'
+          - 'vuex'
+          - 'vuetify'
+        update-types:
+          - minor
+          - patch
+      development-dependencies:
+        dependency-type: development
+        exclude-patterns:
+          - '@vue/cli-*'
+          - 'vue-cli-plugin-*'
+          - 'vue-template-compiler'
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    # '/' means .github/workflows for this ecosystem, not a directory named '/'.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Europe/London
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
