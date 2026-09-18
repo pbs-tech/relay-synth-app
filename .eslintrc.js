@@ -28,6 +28,16 @@ module.exports = {
       env: {
         mocha: true
       }
+    },
+    {
+      files: ['cypress/**/*.{j,t}s'],
+      env: {
+        mocha: true
+      },
+      globals: {
+        cy: 'readonly',
+        Cypress: 'readonly'
+      }
     }
   ]
 }

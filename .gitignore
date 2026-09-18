@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Cypress credentials (see cypress.env.example.json)
+cypress.env.json

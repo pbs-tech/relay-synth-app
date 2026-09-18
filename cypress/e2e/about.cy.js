@@ -1,4 +1,4 @@
-describe("/about",function() {
+describe('/about', function() {
     it('Page loads', function() {
         cy.visit('/about');
         cy.contains('About');
