@@ -8,7 +8,7 @@
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
                         <h2  class="pa-1 text-h6"> Example Sound</h2>
-                        <v-tooltip top>
+                        <v-tooltip location="top">
                             <template v-slot:activator="{ props }">
                                 <v-btn icon v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
@@ -22,7 +22,7 @@
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
                         <h2 class="pa-1 text-h6 text-dark"> Your Sound </h2>
-                        <v-tooltip top>
+                        <v-tooltip location="top">
                             <template v-slot:activator="{ props }">
                                 <v-btn icon v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>

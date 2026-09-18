@@ -6,9 +6,9 @@
                     Tutorial {{ tutorial.number }}: {{ tutorial.name }}
                 </h1>
                 <v-spacer/>
-                <v-tooltip top>
+                <v-tooltip location="top">
                     <template v-slot:activator="{ props }">
-                        <v-btn  large icon v-bind="props">
+                        <v-btn  size="large" icon v-bind="props">
                             <v-icon color="secondary">mdi-help-circle</v-icon>
                         </v-btn>
                     </template>

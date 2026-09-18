@@ -14,7 +14,11 @@ export default  {
                 if(key.state) {
                     synth.triggerAttack(Nexus.mtof(key.note));
                 } else {
-                    synth.triggerRelease();
+                    // Tone 13's PolySynth released every voice when called with no
+                    // note; Tone 14 ignores the call, so clicked notes never
+                    // released - they rang on forever and piled up until the 32
+                    // voice limit was reached and further notes were dropped.
+                    synth.triggerRelease(Nexus.mtof(key.note));
                 }
             })
         },

@@ -1,4 +1,3 @@
-import Nexus from "nexusui";
 
 export default {
     data() {
@@ -14,12 +13,16 @@ export default {
     },
 
     methods: {
+        // The computer keyboard only drives the on-screen piano; the piano's own
+        // change handler (setClickListener) is the single path that reaches the
+        // synth. Previously both fired, so each key press attacked the note twice
+        // and, under fast repeats, the attacks and releases desynchronised and
+        // leaked voices until the 32 voice limit silenced the synth.
         setKeysDown(synth, piano) {
             window.addEventListener("keydown", e => {
                 let key = String.fromCharCode(e.keyCode)
                 if (this.keyMap.has(key) && !this.inputMap.has(key)) {
                     let noteValue = this.keyMap.get(key)
-                    synth.triggerAttack(Nexus.mtof(noteValue));
                     this.inputMap.set(key, noteValue);
                     piano.toggleKey(noteValue, true);
                 }
@@ -31,9 +34,8 @@ export default {
                 let key = String.fromCharCode(e.keyCode)
                 if (this.inputMap.has(key)) {
                     let noteValue = this.keyMap.get(key)
-                    synth.triggerRelease(Nexus.mtof(noteValue));
                     this.inputMap.delete(key);
-                    piano.toggleKey(noteValue, false);    
+                    piano.toggleKey(noteValue, false);
                 }
             })
         }

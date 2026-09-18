@@ -11,7 +11,7 @@
 					Points: {{ tutorial.pointsAvailable }} <br/>
 				</v-card-subtitle>
 				<div class="d-flex pl-2 pb-4" v-if="isTutorialTitleComplete(tutorial.number)">
-					<v-icon large dark color="background">
+					<v-icon size="large" color="background">
 						mdi-check-circle
 					</v-icon>
 					<v-card-subtitle class="text-h6 text-background">

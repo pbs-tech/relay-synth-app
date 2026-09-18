@@ -6,8 +6,8 @@
             <v-btn
                 v-model="playButton"
                 id="user-play-button"
-                fab
-                dark
+                icon
+               
                 @click="onExampleClick()"
                 color="primary"
                 class="ma-5">
@@ -20,7 +20,7 @@
             </v-btn>
             <v-row align="center" justify="center">
             <h3 class="text-h6 text-dark pa-5"> User Volume </h3> 
-             <v-tooltip top v-model="show">
+             <v-tooltip location="top" v-model="show">
                 <template v-slot:activator="{ props }">
                     <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>

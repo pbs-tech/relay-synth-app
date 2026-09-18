@@ -1,6 +1,6 @@
 <template>
     <v-fab-transition>
-        <v-btn id="check-answer" fab dark fixed bottom right x-large color="primary" @click="onCheckAnswerClicked()">
+        <v-btn id="check-answer" class="check-answer-fab" icon size="x-large" color="primary" @click="onCheckAnswerClicked()">
             <v-icon color="background">
                 mdi-send
             </v-icon>
@@ -68,4 +68,13 @@ export default {
     }
 }
 </script>
-    
+
+<style scoped>
+/* Vuetify 3 removed the fixed/bottom/right props this button used to rely on. */
+.check-answer-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 5;
+}
+</style>

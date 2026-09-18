@@ -2,7 +2,7 @@
     <v-container>
     <v-row align="center" justify="center">
         <h3 class="text-h6 pa-5"> Filter Envelope </h3>
-        <v-tooltip top>
+        <v-tooltip location="top">
             <template v-slot:activator="{ props }">
                 <v-btn icon v-bind="props">
                     <v-icon color="secondary">mdi-help-circle</v-icon>

@@ -21,10 +21,10 @@
 									</v-col>
 									<v-container class="d-flex justify-end px-5">
 										<router-link to="/tutorials">
-											<v-btn id="tutorial-button" width="125" large class="ma-1 bg-primary">tutorials</v-btn>
+											<v-btn id="tutorial-button" width="125" size="large" class="ma-1 bg-primary">tutorials</v-btn>
 										</router-link>
 										<router-link to="/play">
-											<v-btn id="play-button" width="125" large class="ma-1 bg-primary">play</v-btn>
+											<v-btn id="play-button" width="125" size="large" class="ma-1 bg-primary">play</v-btn>
 										</router-link>
 									</v-container>
 								</v-row>
