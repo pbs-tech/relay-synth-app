@@ -29,6 +29,7 @@ env:
   # waiting for a check that will never report, until it times out.
   REQUIRED_CHECKS: |
     Lint, test and build
+    Workflow lint
   # Long enough for a cold dependency install, short enough that a wedged run
   # does not hold a runner all day.
   CHECK_TIMEOUT_MINUTES: '30'
