@@ -18,7 +18,11 @@ export default {
                 this.exampleLoop = new Tone.Loop(function(time) {
                     synth.triggerAttackRelease(note, duration  ,time);
                 },interval)
-                Tone.Transport.start();
+                // Tone exports Transport as a module-level const bound to whichever context
+                // existed at import time. main.js swaps in a native AudioContext, so that
+                // static Transport belongs to a discarded context - getTransport() returns
+                // the live one.
+                Tone.getTransport().start();
                 this.exampleLoop.start(0);
             } else {
                 this.exampleLoop.stop();

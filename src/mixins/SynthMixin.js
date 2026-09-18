@@ -10,16 +10,38 @@ export default  {
             osc.connect(synth);
         },
         setClickListener(synth, piano) {
-            piano.on('change',function(key) {
-                if(key.state) {
-                    synth.triggerAttack(Nexus.mtof(key.note));
-                } else {
-                    // Tone 13's PolySynth released every voice when called with no
-                    // note; Tone 14 ignores the call, so clicked notes never
-                    // released - they rang on forever and piled up until the 32
-                    // voice limit was reached and further notes were dropped.
-                    synth.triggerRelease(Nexus.mtof(key.note));
+            // Tone 14's PolySynth releases only the first voice it finds for a
+            // note, so a note attacked twice keeps a voice sounding forever -
+            // the drone. A repeat 'on' is easy to reach: the key map produces
+            // note 60 from two different keys, and dragging back onto a piano
+            // key re-fires it. Track what is sounding so each note gets exactly
+            // one attack and one release.
+            const sounding = new Set();
+
+            piano.on('change', function(key) {
+                const frequency = Nexus.mtof(key.note);
+                if (key.state) {
+                    if (sounding.has(key.note)) {
+                        return;
+                    }
+                    sounding.add(key.note);
+                    synth.triggerAttack(frequency);
+                } else if (sounding.delete(key.note)) {
+                    // Tone 13 released every voice when called with no note;
+                    // Tone 14 ignores that, so the note has to be named.
+                    synth.triggerRelease(frequency);
                 }
+            })
+
+            // Releasing the mouse outside the piano, or losing focus mid-note,
+            // means the matching 'off' never arrives. Drop everything rather
+            // than leave it droning.
+            window.addEventListener('blur', function() {
+                if (!sounding.size) {
+                    return;
+                }
+                sounding.clear();
+                synth.releaseAll();
             })
         },
         setVolumeChangeListener(synth, slider) {

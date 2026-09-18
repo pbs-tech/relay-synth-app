@@ -118,8 +118,8 @@ export default {
         }
     },     
     unmounted() {
-        Tone.Transport.cancel();
-        Tone.Transport.stop();
+        Tone.getTransport().cancel();
+        Tone.getTransport().stop();
         this.userSynth.dispose();
         this.oscilloscope.destroy();
         this.volumeSlider.destroy();

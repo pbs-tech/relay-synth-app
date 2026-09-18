@@ -108,8 +108,8 @@ export default {
         }
     },
     unmounted() {
-        Tone.Transport.cancel();
-        Tone.Transport.stop();
+        Tone.getTransport().cancel();
+        Tone.getTransport().stop();
         this.oscilloscope.destroy();
         this.volumeSlider.destroy();
         this.volumeNumber.destroy();
