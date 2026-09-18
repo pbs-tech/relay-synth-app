@@ -28,10 +28,14 @@ export default  {
             })
         },
         
-        setOscillator(synth, select) {
+        setOscillator(synth, select, labelMap) {
             let waveform;
             select.on('change', function(v) {
-                switch (v.value) {
+                // /play names the waveforms outright while tutorials keep the
+                // neutral labels, so map the shown label back to the canonical
+                // one before deciding.
+                const choice = (labelMap && labelMap[v.value]) || v.value;
+                switch (choice) {
                     case 'Waveform 1':
                         waveform = "triangle";
                         break;

@@ -43,10 +43,30 @@ export default {
             setMatching
         }
     },
+    props: {
+        // Tutorials hide what each waveform really is so the answer is not
+        // given away; /play has nothing to protect and names them.
+        revealNames: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
-            waveforms: ["Waveform 1", "Waveform 2", "Waveform 3", "Waveform 4"],
+            neutralWaveforms: ["Waveform 1", "Waveform 2", "Waveform 3", "Waveform 4"],
+            realWaveforms: ["Triangle", "Sine", "Sawtooth", "Square"],
             userWaveform: null,
+        }
+    },
+    computed: {
+        waveforms() {
+            return this.revealNames ? this.realWaveforms : this.neutralWaveforms;
+        },
+        waveformLabelMap() {
+            return this.waveforms.reduce((map, label, i) => {
+                map[label] = this.neutralWaveforms[i];
+                return map;
+            }, {});
         }
     },
     mounted() {
@@ -56,7 +76,7 @@ export default {
         // nothing and Nexus threw before any control was built. Defer a tick.
         this.$nextTick(() => {
             this.initUi();
-            this.setOscillator(this.userSynth, this.selectOscillator);
+            this.setOscillator(this.userSynth, this.selectOscillator, this.waveformLabelMap);
     
         });
     },

@@ -2,8 +2,8 @@
     <v-container justify="center" align="center">
         <h1 class="text-h2 py-5 text-text">Play</h1>
         <v-row justify="center" align="center" class="text-body-1 pa-5">
-            <p> This page allows you to create sounds outside of a tutorial, some of the options are still hidden to not give away the answers to the tutorials but
-             feel free to experiment. More controls will be added as they are implemented. 
+            <p> This page allows you to create sounds outside of a tutorial, so the waveforms and filters are named for what they
+             actually are - feel free to experiment. More controls will be added as they are implemented.
              You can play the synth by clicking the notes on the piano or by using the letters on your keyboard: </p>
              <v-list>
              <v-list-item class="text-body-1 text-text font-weight-bold"> z to , for lower pitch white notes and s,d,g,h,j for lower pitch black notes. </v-list-item>
@@ -13,9 +13,9 @@
         <v-row>
             <v-col justify="center" align="center">
                 <UserSynth/>
-                <Oscillator/>
+                <Oscillator reveal-names/>
                 <AmplitudeEnvelope/>
-                <FilterSettings/>
+                <FilterSettings reveal-names/>
                 <FilterEnvelope/>
             </v-col>
         </v-row>

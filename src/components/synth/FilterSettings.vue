@@ -55,11 +55,31 @@ export default {
             userSynth
         }
     },
+    props: {
+        // See Oscillator: tutorials keep the neutral names, /play does not.
+        revealNames: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
-            filterTypes: ["No Filter", "Filter Type 1", "Filter Type 2", "Filter Type 3"],
+            neutralFilterTypes: ["No Filter", "Filter Type 1", "Filter Type 2", "Filter Type 3"],
+            realFilterTypes: ["No Filter", "Bandpass", "Lowpass", "Highpass"],
             FILTER_MAX: 20000,
             INITIAL_CUTOFF: 5000,
+        }
+    },
+
+    computed: {
+        filterTypes() {
+            return this.revealNames ? this.realFilterTypes : this.neutralFilterTypes;
+        },
+        filterLabelMap() {
+            return this.filterTypes.reduce((map, label, i) => {
+                map[label] = this.neutralFilterTypes[i];
+                return map;
+            }, {});
         }
     },
 
@@ -79,7 +99,7 @@ export default {
 
         this.$nextTick(() => {
             this.initUi();
-            this.setFilterType(this.userSynth, this.selectFilterType, this.envelope);
+            this.setFilterType(this.userSynth, this.selectFilterType, this.envelope, this.filterLabelMap);
             // Previously missing. createFilterCutoffSlider and setFilterCutoffListener
             // both existed but were never called, so the cutoff was permanently
             // whatever setFilterClickListener applied on mount and no tutorial could
