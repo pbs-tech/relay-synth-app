@@ -1,6 +1,6 @@
 <template>
     <v-container class="my-5">
-		<h1 class="display-3 secondary--text">Leaderboard</h1>
+		<h1 class="text-h2 text-secondary">Leaderboard</h1>
 		<v-text-field
 			id="search-field"
 			v-model="search"

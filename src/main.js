@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 import { useUserStore } from './stores/useUserStore'
 import vuetify from './plugins/vuetify'
 import Axios from 'axios'
+import { installAudioUnlock } from './util/audioContext'
 
 const token = localStorage.getItem('token')
 if (token) {
@@ -20,6 +21,10 @@ app.use(router)
 app.use(vuetify)
 
 app.mount('#app')
+
+// Resume the Web Audio context on the first user gesture (see the module for
+// why Tone 14 needs this).
+installAudioUnlock()
 
 if (window.Cypress) {
     window.app = app

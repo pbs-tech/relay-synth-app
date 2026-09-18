@@ -1,8 +1,8 @@
  <template>
-    <nav class="background">
+    <nav class="bg-background">
         <v-app-bar>
         <v-app-bar-nav-icon color="secondary" id="drawer" @click="drawer = !drawer"></v-app-bar-nav-icon>
-                <v-toolbar-title class="text--text">
+                <v-toolbar-title class="text-text">
                         <span id="site-title"> Relay Synth </span>
                 </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -20,11 +20,11 @@
         </div> 
         <div class="logout" v-if="isLoggedIn">
             <v-btn id="logout-button" color="primary" @click="logoutUser">
-                <span class="background--text"> Logout </span>
+                <span class="text-background"> Logout </span>
             </v-btn>
         </div> 
         </v-app-bar>
-        <v-navigation-drawer top fixed v-model="drawer" app class="primary title white--text">
+        <v-navigation-drawer top fixed v-model="drawer" app class="bg-primary text-h6 text-white">
             <v-list nav>
                 <v-list-item>
                     <v-icon id="drawer-close" @click="drawer = !drawer" color="background">
@@ -32,7 +32,7 @@
                     </v-icon>
                 </v-list-item>
                 <v-list-item v-if="isLoggedIn" class="d-flex justify-center">
-                    <v-sheet class="primary background--text subtitle-1">
+                    <v-sheet class="bg-primary text-background text-subtitle-1">
                         <span> {{ userEmail }} </span><br/>
                         <span> Score: {{ userScore }} </span><br/>
                         <span> Completed: {{ tutorialsCompletedCount }} / {{tutorialCount.total}} </span>
@@ -40,7 +40,7 @@
                 </v-list-item>
                 <v-list-item> <v-divider/> </v-list-item>
                 <v-list-item @click="drawer=!drawer" v-for="link in links" :key="link.text" router :to="link.route">
-                    <v-list-item-title class="headline background--text"> {{ link.text }} </v-list-item-title>
+                    <v-list-item-title class="text-h5 text-background"> {{ link.text }} </v-list-item-title>
                 </v-list-item>
             </v-list>
         </v-navigation-drawer>

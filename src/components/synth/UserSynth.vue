@@ -19,14 +19,14 @@
                     </v-icon>
             </v-btn>
             <v-row align="center" justify="center">
-            <h3 class="title  dark--text pa-5"> User Volume </h3> 
+            <h3 class="text-h6 text-dark pa-5"> User Volume </h3> 
              <v-tooltip top v-model="show">
                 <template v-slot:activator="{ props }">
                     <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
-                <span class="body-2"> Changes the volume of your synth </span>
+                <span class="text-body-2"> Changes the volume of your synth </span>
                 </v-tooltip>
             </v-row>
             <div id="user-volume-slider"></div>

@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row align="center" justify="center">
-            <h3 class="title pa-5"> Amplitude Envelope </h3>
+            <h3 class="text-h6 pa-5"> Amplitude Envelope </h3>
             <v-tooltip top>
                 <template v-slot:activator="{ props }">
                     <v-btn icon v-bind="props">
@@ -17,28 +17,28 @@
             </v-col>
             <v-col>
                 <v-row class="py-1 align-center">
-                    <h4 id="amp-attack-title" class="subtitle-2"> Attack (ms): </h4> 
+                    <h4 id="amp-attack-title" class="text-subtitle-2"> Attack (ms): </h4> 
                     <v-spacer/>
                     <div id="amp-attack-slider"></div>
                     <v-spacer/>
                     <div id="amp-attack-value"></div>
                 </v-row>
                 <v-row class="py-1 align-center">
-                    <h4 id="amp-decay-title" class="subtitle-2"> Decay (ms): </h4>
+                    <h4 id="amp-decay-title" class="text-subtitle-2"> Decay (ms): </h4>
                     <v-spacer/>
                     <div id="amp-decay-slider"></div>
                     <v-spacer/>
                     <div id="amp-decay-value"></div>
                 </v-row>
                 <v-row class="py-1 align-center">
-                    <h4 id="amp-sustain-title" class="subtitle-2"> Sustain (dB): </h4>
+                    <h4 id="amp-sustain-title" class="text-subtitle-2"> Sustain (dB): </h4>
                     <v-spacer/>
                     <div id="amp-sustain-slider"></div>
                     <v-spacer/>
                     <div id="amp-sustain-value"></div>
                 </v-row>
                 <v-row class="py-1 align-center">
-                    <h4 id="amp-release-title" class="subtitle-2"> Release (ms): </h4> 
+                    <h4 id="amp-release-title" class="text-subtitle-2"> Release (ms): </h4> 
                     <v-spacer/>
                     <div id="amp-release-slider"></div>
                     <v-spacer/>

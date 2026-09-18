@@ -2,12 +2,12 @@
     <v-container class="my-5">
         <TutorialText v-bind:tutorialId="tutorialId"/>
             <v-row v-if="showAnswer" justify="center" align="center"> 
-                <h2 class="title secondary--text pa-1"> Answer: </h2>{{ tutorialParams }}
+                <h2 class="text-h6 text-secondary pa-1"> Answer: </h2>{{ tutorialParams }}
             </v-row>
             <v-row justify="center" align="center"> 
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
-                        <h2  class="pa-1 title"> Example Sound</h2>
+                        <h2  class="pa-1 text-h6"> Example Sound</h2>
                         <v-tooltip top>
                             <template v-slot:activator="{ props }">
                                 <v-btn icon v-bind="props">
@@ -21,14 +21,14 @@
                 </v-col>
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
-                        <h2 class="pa-1 title dark--text"> Your Sound </h2>
+                        <h2 class="pa-1 text-h6 text-dark"> Your Sound </h2>
                         <v-tooltip top>
                             <template v-slot:activator="{ props }">
                                 <v-btn icon v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
-                            <span class="body-2"> This is the sound you are creating, click on the piano, use your keyboard or the play button to hear and see it.</span>
+                            <span class="text-body-2"> This is the sound you are creating, click on the piano, use your keyboard or the play button to hear and see it.</span>
                         </v-tooltip>
                     </v-row>
                     <UserSynth v-bind:tutorialId="tutorialId"/>

@@ -1,14 +1,14 @@
 <template>
     <v-container>
         <v-row justify="center" align="center" no-gutters>
-            <h3 class="title pa-5"> Oscillator </h3> 
+            <h3 class="text-h6 pa-5"> Oscillator </h3> 
             <v-tooltip top>
                 <template v-slot:activator="{ props }">
                     <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
-                <span class="body-2 background--text"> Changes the sound of the synth and the shape of the visualiser </span>
+                <span class="text-body-2 text-background"> Changes the sound of the synth and the shape of the visualiser </span>
             </v-tooltip>
         </v-row>
         <v-row  justify="center" align="center">      

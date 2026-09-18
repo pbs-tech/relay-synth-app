@@ -12,13 +12,13 @@
         </v-snackbar>
         <v-card width="400" class="mx-auto ma-9">
                 <v-toolbar color="primary" dark flat>
-                    <v-toolbar-title class="title background--text" id="signup-title"> Signup </v-toolbar-title>
+                    <v-toolbar-title class="text-h6 text-background" id="signup-title"> Signup </v-toolbar-title>
                     <v-spacer/>
                 </v-toolbar>
             <v-card-text>
                 <v-form>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-email-field"
                         label="Email"
                         :error-messages="emailErrors"
@@ -30,7 +30,7 @@
                         @blur="v$.signupData.email.$touch()"
 />
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-password-field"
                         label="Password" 
                         :error-messages="passwordErrors"
@@ -41,7 +41,7 @@
                         required
                         @input="v$.signupData.password.$touch()"/>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-repeat-password-field"
                         type="password" 
                         :error-messages="repeatPasswordErrors"
@@ -52,9 +52,9 @@
                         required
                         @input="v$.signupData.repeatPassword.$touch()" />
                 </v-form>
-                        <p id="login-redirect-text" class="body-1 text-center"> Already have an account? 
+                        <p id="login-redirect-text" class="text-body-1 text-center"> Already have an account? 
                             <router-link to="/login"> 
-                                <span class="secondary--text" id="login-redirect">
+                                <span class="text-secondary" id="login-redirect">
                                      Login 
                                 </span> 
                             </router-link>

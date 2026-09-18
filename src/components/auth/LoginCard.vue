@@ -12,13 +12,13 @@
         </v-snackbar>
         <v-card width="400" class="mx-auto ma-9">
                 <v-toolbar color="primary" dark flat>
-                    <v-toolbar-title class="display-1 background--text" id="login-title"> Login </v-toolbar-title>
+                    <v-toolbar-title class="text-h4 text-background" id="login-title"> Login </v-toolbar-title>
                     <v-spacer/>
                 </v-toolbar>
             <v-card-text>
                 <v-form>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="login-email-field"
                         label="Email" 
                         name="email"
@@ -27,7 +27,7 @@
                         v-model="loginData.email"
                         required/>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="login-password-field"
                         type="password" 
                         label="Password" 
@@ -36,7 +36,7 @@
                         v-model="loginData.password"
                         required/>
                 </v-form>
-                        <p id="signup-redirect-text" class="body-1 text-center"> Need an account? <router-link to="/signup"><span class="secondary--text" id="signup-redirect"> Signup </span></router-link></p>
+                        <p id="signup-redirect-text" class="text-body-1 text-center"> Need an account? <router-link to="/signup"><span class="text-secondary" id="signup-redirect"> Signup </span></router-link></p>
             </v-card-text>
             <v-divider/>
             <v-card-actions>

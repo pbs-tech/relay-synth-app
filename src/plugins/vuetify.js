@@ -13,8 +13,8 @@ export default createVuetify({
                     primary: '#5FB5BD',
                     background: '#FAFAFA',
                     secondary: '#4F95A2',
-                    surface: '#247C84',
-                    'on-surface': '#0A191E'
+                    text: '#247C84',
+                    dark: '#0A191E'
                 }
             }
         }

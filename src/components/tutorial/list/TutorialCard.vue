@@ -1,11 +1,11 @@
 <template>
     <div class="tutorial-card">
 		<v-card  outline color="primary" min-width="240" height="250">
-			<v-card-title class="headline background--text"> 
+			<v-card-title class="text-h5 text-background"> 
 				{{ tutorial.number }} {{ tutorial.name }} 
 			</v-card-title>
 			<v-divider/>
-				<v-card-subtitle class="title background--text"> 
+				<v-card-subtitle class="text-h6 text-background"> 
 					Category: {{ tutorial.category }} <br/>
 					Difficulty: {{ tutorial.difficulty }} <br/>
 					Points: {{ tutorial.pointsAvailable }} <br/>
@@ -14,7 +14,7 @@
 					<v-icon large dark color="background">
 						mdi-check-circle
 					</v-icon>
-					<v-card-subtitle class="title background--text">
+					<v-card-subtitle class="text-h6 text-background">
 						Completed
 					</v-card-subtitle>
 				</div>

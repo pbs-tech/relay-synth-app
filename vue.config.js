@@ -26,6 +26,29 @@ module.exports = {
       ]
     }
   },
+  chainWebpack: config => {
+    // Vuetify component props are not native asset attributes, so vue-loader
+    // leaves <v-img src="../assets/..."> as a literal string and the browser
+    // 404s it. vue-cli-plugin-vuetify used to register these; the Vue 3
+    // migration dropped that plugin without replacing the transform.
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap(options => {
+        options.compilerOptions = options.compilerOptions || {}
+        options.transformAssetUrls = Object.assign({}, options.transformAssetUrls, {
+          'v-img': ['src', 'lazy-src'],
+          'v-card': 'image',
+          'v-card-item': 'prepend-avatar',
+          'v-carousel-item': ['src', 'lazy-src'],
+          'v-parallax': 'src',
+          'v-avatar': 'image',
+          'v-toolbar': 'image'
+        })
+        return options
+      })
+  },
+
   devServer: {
     host: '0.0.0.0',
     port: 8080,

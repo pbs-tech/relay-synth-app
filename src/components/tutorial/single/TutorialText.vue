@@ -1,8 +1,8 @@
 <template>
     <v-container>
-        <div id="header" class="my-2 secondary--text" >
+        <div id="header" class="my-2 text-secondary" >
             <v-row>
-                <h1 class="display-3  py-2"> 
+                <h1 class="text-h2 py-2"> 
                     Tutorial {{ tutorial.number }}: {{ tutorial.name }}
                 </h1>
                 <v-spacer/>
@@ -12,12 +12,12 @@
                             <v-icon color="secondary">mdi-help-circle</v-icon>
                         </v-btn>
                     </template>
-                    <span class="body-2"> Try and re-create the tutorial sound by changing the parameters at the bottom. Press the send button to submit your answer.</span>
+                    <span class="text-body-2"> Try and re-create the tutorial sound by changing the parameters at the bottom. Press the send button to submit your answer.</span>
                 </v-tooltip>
             </v-row>
             <div class="mx-6">
 
-                <h2 class="headline">
+                <h2 class="text-h5">
                     Category: {{ tutorial.category }}  
                 </h2>
 
@@ -30,13 +30,13 @@
                         <span v-if="!tutorialComplete"> {{ tutorial.pointsAvailable }} </span>
                         <span v-else> 0 </span>
                 </h2>     
-                <h2 v-if="tutorialComplete" class="headline font-weight-bold green--text">
+                <h2 v-if="tutorialComplete" class="text-h5 font-weight-bold text-green">
                     Completed
                 </h2>
             </div>
         </div>
         <v-divider/>
-        <div id="text" class="pa-8 mx-auto body-1"> 
+        <div id="text" class="pa-8 mx-auto text-body-1"> 
             {{ tutorial.text }} 
         </div>
     </v-container>

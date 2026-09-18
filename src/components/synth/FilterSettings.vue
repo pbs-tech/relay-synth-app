@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-row justify="center" align="center"> 
-            <h3 class="title pa-5"> Filter Settings </h3>
+            <h3 class="text-h6 pa-5"> Filter Settings </h3>
             <v-tooltip top>
                 <template v-slot:activator="{ props }">
                     <v-btn icon v-bind="props">
@@ -17,12 +17,12 @@
             </v-col>
             <v-col>
                 <v-row class="py-1 align-center">
-                    <h4 id="filter-type-title" class="justify-center subtitle-2"> Filter Type: </h4> 
+                    <h4 id="filter-type-title" class="justify-center text-subtitle-2"> Filter Type: </h4> 
                     <v-spacer/>
                     <div id="filter-type-select"></div>
                 </v-row>
                 <v-row class="py-1 align-center">
-                    <h4 id="filter-cutoff-title" class="justify-center subtitle-2"> Cutoff (Hz): </h4>
+                    <h4 id="filter-cutoff-title" class="justify-center text-subtitle-2"> Cutoff (Hz): </h4>
                     <v-spacer/>
                     <div id="filter-cutoff-slider"></div>
                     <v-spacer/>
