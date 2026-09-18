@@ -1,25 +1,16 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+// Credentials come from cypress.env.json (gitignored) or CYPRESS_* env vars,
+// so no account password lives in the repo. See cypress.env.example.json.
+Cypress.Commands.add('userEmail', () => Cypress.env('userEmail'))
+
+// Log in through the Pinia store rather than the login form, so specs that
+// only need an authenticated session don't depend on the form's markup.
+Cypress.Commands.add('loginByStore', () => {
+    cy.visit('/')
+    cy.window().its('userStore').then((userStore) =>
+        userStore.login({
+            email: Cypress.env('userEmail'),
+            password: Cypress.env('userPassword')
+        })
+    )
+    cy.window().its('userStore').its('isLoggedIn').should('eq', true)
+})

@@ -1,7 +1,7 @@
 <template>
     <v-container class="my-5">
-        <h1 class="display-3 ma-2 secondary--text">Tutorials</h1>
-        <v-container class="body-1 ma-5">
+        <h1 class="text-h2 ma-2 text-secondary">Tutorials</h1>
+        <v-container class="text-body-1 ma-5">
 			<p> These tutorials aim to teach the fundamental parts of a synthesizer (synth) using interactive tutorials. 
 			To complete the tutorials you must replicate the sound using the controls presented. You can listen to your own synth
 			and the tutorial synth by clicking the play buttons or by clicking on a note on the pianos.
@@ -16,17 +16,28 @@
 
 <script>
 import TutorialList from '@/components/tutorial/list/TutorialList';
-import { mapGetters, mapActions } from 'vuex';
+import { computed } from 'vue'
+import { useTutorialsStore } from '@/stores/useTutorialsStore'
 
 export default {
     name: 'Tutorials',
     components: {
         TutorialList
     },
-    methods: {
-      ...mapActions(['fetchTitles'])
+    setup() {
+        const tutorialsStore = useTutorialsStore()
+
+        const tutorialTitles = computed(() => tutorialsStore.tutorialTitles)
+
+        const fetchTitles = () => {
+            return tutorialsStore.fetchTitles()
+        }
+
+        return {
+            tutorialTitles,
+            fetchTitles
+        }
     },
-    computed: mapGetters(['tutorialTitles']),
     created() {
       this.fetchTitles();
     }

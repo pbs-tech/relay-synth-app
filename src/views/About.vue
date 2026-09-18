@@ -1,8 +1,8 @@
 <template>
 	<v-container class="my-5">
-		<h1 id="about-title" class="display-3 py-3 text--text">About</h1>
-		<h2 id="problem-heading" class="headline text--text"> The Problem </h2>
-		<p id="problem-text" class="text-justify body-1">
+		<h1 id="about-title" class="text-h2 py-3 text-text">About</h1>
+		<h2 id="problem-heading" class="text-h5 text-text"> The Problem </h2>
+		<p id="problem-text" class="text-justify text-body-1">
 			A synthesizer is a musical instrument (either hardware 
 			or software) that typically uses a piano keyboard to 
 			generate audio signals to create sounds. Synthesizer
@@ -13,8 +13,8 @@
 			and understanding how to manipulate synthesizers to create 
 			unique sounds. 
 		</p>
-		<h2 id="solution-heading" class="headline text--text"> My Solution </h2>
-		<p id="solution-text" class="text-justify body-1 ">
+		<h2 id="solution-heading" class="text-h5 text-text"> My Solution </h2>
+		<p id="solution-text" class="text-justify text-body-1">
 			Electronic learning (e-learning) is being increasingly
 			applied to formal and informal music teaching and
 			learning. I have created an interactive web application 
@@ -25,29 +25,29 @@
 			the benefits of aninteractive, accessible and usable web 
 			interface. 
 		</p>
-		<h2 id="features-heading" class="headline text--text"> Features </h2>
+		<h2 id="features-heading" class="text-h5 text-text"> Features </h2>
 		<v-list id="features-list">
-			<v-list-item class="text-justify body-1">
+			<v-list-item class="text-justify text-body-1">
 				Interactive tutorials with gamification elements
 				to help teach  sound synthesis concepts.
 			</v-list-item>
-			<v-list-item class="text-justify body-1">
+			<v-list-item class="text-justify text-body-1">
 				Users can play a synthesizer in their browser, changing
 				its sound to match the example and gain points.
 			</v-list-item>
-			<v-list-item class="text-justify body-1">
+			<v-list-item class="text-justify text-body-1">
 				Simple and responsive user-interface based on
 				material design.
 			</v-list-item>
-			<v-list-item class="text-justify body-1">
+			<v-list-item class="text-justify text-body-1">
 				Dynamic leaderboard of usernames and their scores to 
 				encourage competition.
 			</v-list-item>
 		</v-list>
-		<h2 id="technologies-heading" class="headline text--text"> Technologies Used </h2>
-		<h3 id="backend-subheading" class="title mx-auto pa-5 text--text"> Back-end </h3>
+		<h2 id="technologies-heading" class="text-h5 text-text"> Technologies Used </h2>
+		<h3 id="backend-subheading" class="text-h6 mx-auto pa-5 text-text"> Back-end </h3>
 		<v-row class="ma-auto" id="backend-list" align="center" justify="center"> 
-			<v-card class="background ma-auto" raised v-for="item in backEnd" :key="item.name" height="200px" width="200px">
+			<v-card class="bg-background ma-auto" raised v-for="item in backEnd" :key="item.name" height="200px" width="200px">
 				<a :href="item.link">
 					<v-img class="ma-auto" v-if="item.img" height="100px" width="100px" :src="getImgUrl(item.img)"></v-img>
 					<v-sheet v-else color="background" height="100px" width="100px">
@@ -57,9 +57,9 @@
 				</a>
 			</v-card>
 		</v-row>
-		<h3 id="frontend-subheading" class="title pa-5 text--text"> Front-end </h3>
+		<h3 id="frontend-subheading" class="text-h6 pa-5 text-text"> Front-end </h3>
 		<v-row class="ma-auto" id="frontend-list" align="center" justify="center">
-			<v-card class="background ma-auto"  raised v-for="item in frontEnd" :key="item.name" height="200px" width="200px">						
+			<v-card class="bg-background ma-auto"  raised v-for="item in frontEnd" :key="item.name" height="200px" width="200px">						
 				<a :href="item.link">
 					<v-img class="ma-auto" v-if="item.img" height="100px" max-width="100px" :src="getImgUrl(item.img)"> </v-img>
 					<v-sheet v-else color="background" height="100px" width="100px"></v-sheet>
@@ -68,12 +68,12 @@
 				</a>
 			</v-card>
 		</v-row>
-		<h2 id="references-subheading" class="py-5 headline text--text"> References </h2>
-		<p class="text-justify text-align body-1">
+		<h2 id="references-subheading" class="py-5 text-h5 text-text"> References </h2>
+		<p class="text-justify text-align text-body-1">
 			<strong> Synthesizer Image credit </strong> <br/>
 			saragraphika (2020). Synthesizer. [online] Pixabay.com. Available at: https://cdn.pixabay.com/photo/2015/02/01/22/24/music-620360_1280.jpg [Accessed 22 Apr. 2020].
 		</p>
-		<p class="text-justify body-1">
+		<p class="text-justify text-body-1">
 			<strong> Aspects of tutorials adapted from </strong> <br/>
 			Russ, M. (2002). Sound Synthesis and Sampling. Focal Press, pp.75–100. <br/>
 			Robehmed, N. (2019). Sine, Square, Triangle, Saw : Synth Waveforms - Perfect Circuit. [online] www.perfectcircuit.com. Available at: https://www.perfectcircuit.com/signal/difference-between-waveforms [Accessed 13 Apr. 2020].

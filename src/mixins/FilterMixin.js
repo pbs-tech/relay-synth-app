@@ -6,10 +6,13 @@ export default {
         }
     },
     methods:  {
-        setFilterType(synth, select, envelope) {
+        setFilterType(synth, select, envelope, labelMap) {
             let filterType;
             select.on('change', function(v) {
-                switch (v.value) {
+                // See setOscillator: /play shows real filter names, tutorials
+                // keep the neutral ones.
+                const choice = (labelMap && labelMap[v.value]) || v.value;
+                switch (choice) {
                     case 'Filter Type 1':
                         let bp1 = envelope.points[0];
                         let bp2 = envelope.points[1];

@@ -6,8 +6,8 @@
             <v-btn
                 v-model="playButton"
                 id="user-play-button"
-                fab
-                dark
+                icon
+               
                 @click="onExampleClick()"
                 color="primary"
                 class="ma-5">
@@ -19,14 +19,14 @@
                     </v-icon>
             </v-btn>
             <v-row align="center" justify="center">
-            <h3 class="title  dark--text pa-5"> User Volume </h3> 
-             <v-tooltip top v-model="show">
-                <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on">
+            <h3 class="text-h6 text-dark pa-5"> User Volume </h3> 
+             <v-tooltip location="top" v-model="show">
+                <template v-slot:activator="{ props }">
+                    <v-btn icon variant="text" v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
-                <span class="body-2"> Changes the volume of your synth </span>
+                <span class="text-body-2"> Changes the volume of your synth </span>
                 </v-tooltip>
             </v-row>
             <div id="user-volume-slider"></div>
@@ -34,15 +34,14 @@
     </div>
 </template>
 <script>
-
 import Nexus from "nexusui";
-import Tone from "tone";
-import { mapGetters, mapActions, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
+import { useExampleStore } from '@/stores/useExampleStore'
 import SynthMixin from '@/mixins/SynthMixin';
 import ExampleMixin from '@/mixins/ExampleMixin';
 import UIMixin from '@/mixins/UIMixin';
 import IOMixin from '@/mixins/IOMixin';
-
 
 export default {
     name: 'TutorialSynth',
@@ -50,29 +49,64 @@ export default {
         tutorialId: String
     },
     mixins: [SynthMixin, ExampleMixin, UIMixin, IOMixin],
+    setup() {
+        const synthsStore = useSynthsStore()
+        const exampleStore = useExampleStore()
 
+        const userSynth = computed(() => synthsStore.userSynth)
+        const tutorialSynth = computed(() => synthsStore.tutorialSynth)
+        const example = computed(() => exampleStore.example)
+
+        const fetchExample = (tutorialId) => {
+            return exampleStore.fetchExample(tutorialId)
+        }
+
+        const fetchSynthBase = (tutorialId) => {
+            return synthsStore.fetchSynthBase(tutorialId)
+        }
+
+        const setUserSynth = () => {
+            synthsStore.setUserSynth()
+        }
+
+        return {
+            userSynth,
+            tutorialSynth,
+            example,
+            fetchExample,
+            fetchSynthBase,
+            setUserSynth
+        }
+    },
     data() {
         return {
             playButton: false,
             show: false
         }
     },
-    computed: mapGetters(['userSynth','tutorialSynth','example']),
 
     mounted() {
-        this.initUi();
-        this.fetchExample(this.tutorialId);
-        this.setUserSynth();
-        this.setOscListener(this.userSynth, this.oscilloscope);
-        this.setClickListener(this.userSynth, this.piano);
-        this.setVolumeChangeListener(this.userSynth, this.volumeSlider);
-        this.setKeysDown(this.userSynth, this.piano);
-        this.setKeysUp(this.userSynth, this.piano);
+        // Nexus resolves its mount points with document.getElementById, and
+        // mounted() does not guarantee this subtree is in the document yet -
+        // under a lazily routed view in Vue 3 it is not, so the lookup returned
+        // nothing and Nexus threw before any control was built. Defer a tick.
+
+        this.$nextTick(() => {
+            this.initUi();
+            this.fetchExample(this.tutorialId);
+            this.setUserSynth();
+            this.setOscListener(this.userSynth, this.oscilloscope);
+            this.setClickListener(this.userSynth, this.piano);
+            this.setVolumeChangeListener(this.userSynth, this.volumeSlider);
+            this.setKeysDown(this.userSynth, this.piano);
+            this.setKeysUp(this.userSynth, this.piano);
+
+    
+
+        });
 
     },
     methods: {
-        ...mapActions(['fetchExample','fetchSynthBase']),
-        ...mapMutations(['setUserSynth']),
         initUi() {
             this.piano = this.createPiano("user-piano");
             this.oscilloscope = this.createOsc("user-osc");
@@ -82,15 +116,27 @@ export default {
             this.playButton = this.toggleExample(this.userSynth, this.playButton, this.example);
         }
     },     
-    destroyed() {
-        Tone.Transport.cancel();
-        Tone.Transport.stop();
-        this.userSynth.dispose();
-        this.oscilloscope.destroy();
-        this.volumeSlider.destroy();
-        this.volumeNumber.destroy();
-        this.piano.destroy();
-
+    unmounted() {
+        // volumeNumber was never assigned by initUi, so destroying it threw and
+        // everything after it - including piano.destroy() - was skipped.
+        // Disposing the synth here is also wrong: the store owns it, and by the
+        // time this runs the next route component has already replaced it.
+        this.teardownKeyboard();
+        this.teardownClickListener();
+        if (this.releaseHeldNotes) {
+            this.releaseHeldNotes();
+        }
+        // Deliberately not touching the Transport. It is global and shared, and
+        // cancelling it strands voices: a note played after a cancel never gets
+        // its onsilence callback, so it is never returned to the pool and
+        // activeVoices climbs until maxPolyphony silences the synth. Measured:
+        // a note leaves 0 active voices normally and 1 after a Transport
+        // cancel+stop. stopExample() already disposes the only thing this
+        // component schedules.
+        this.stopExample();
+        if (this.oscilloscope) this.oscilloscope.destroy();
+        if (this.volumeSlider) this.volumeSlider.destroy();
+        if (this.piano) this.piano.destroy();
     } 
 }
 </script>

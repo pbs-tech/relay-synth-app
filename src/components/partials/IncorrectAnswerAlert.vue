@@ -23,22 +23,40 @@
     </v-snackbar>
 </template>
 <script>
-
-import { mapGetters, mapMutations } from 'vuex';
-
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
 
 export default {
     name: 'IncorrectAnswerAlert',
-    computed:  mapGetters(['matching','noOfGuesses']),
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const matching = computed(() => synthsStore.matching)
+        const noOfGuesses = computed(() => synthsStore.noOfGuesses)
+
+        const setMatching = (value) => {
+            synthsStore.setMatching(value)
+        }
+
+        const setShowAnswer = (value) => {
+            synthsStore.setShowAnswer(value)
+        }
+
+        const reset = () => {
+            setMatching(undefined)
+        }
+
+        return {
+            matching,
+            noOfGuesses,
+            setMatching,
+            setShowAnswer,
+            reset
+        }
+    },
     data() {
         return {
             timeout: 0,
-        }
-    },
-    methods: {
-    ...mapMutations(['setMatching','setShowAnswer']),
-        reset() {
-            this.setMatching(undefined);
         }
     }
 }

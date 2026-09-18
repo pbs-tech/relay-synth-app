@@ -1,12 +1,17 @@
 import { expect } from 'chai'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import Home from '@/views/Home.vue'
+import { createPinia } from 'pinia'
 describe('Home.vue', function() {
 	let page;
 
 	beforeEach( function() {
 		page = shallowMount(Home, {
-            stubs: ['router-link', 'router-view']
+            global: {
+                plugins: [createPinia()],
+                components: { 'router-link': RouterLinkStub },
+                stubs: ['router-view']
+            }
         });
 	})
 	it('renders page title', function() {

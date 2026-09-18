@@ -12,13 +12,13 @@
         </v-snackbar>
         <v-card width="400" class="mx-auto ma-9">
                 <v-toolbar color="primary" dark flat>
-                    <v-toolbar-title class="title background--text" id="signup-title"> Signup </v-toolbar-title>
+                    <v-toolbar-title class="text-h6 text-background" id="signup-title"> Signup </v-toolbar-title>
                     <v-spacer/>
                 </v-toolbar>
             <v-card-text>
                 <v-form>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-email-field"
                         label="Email"
                         :error-messages="emailErrors"
@@ -27,10 +27,10 @@
                         type="email"
                         v-model="signupData.email"
                         required
-                        @input="$v.email.$touch()"
-                        @blur="$v.email.$touch()"/>
+                        @blur="v$.signupData.email.$touch()"
+/>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-password-field"
                         label="Password" 
                         :error-messages="passwordErrors"
@@ -39,10 +39,9 @@
                         prepend-icon="mdi-lock"
                         v-model="signupData.password" 
                         required
-                        @input="$v.password.$touch()"
-                        @blur="$v.password.$touch()"/>
+                        @input="v$.signupData.password.$touch()"/>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="signup-repeat-password-field"
                         type="password" 
                         :error-messages="repeatPasswordErrors"
@@ -51,12 +50,11 @@
                         prepend-icon="mdi-repeat"
                         v-model="signupData.repeatPassword"
                         required
-                        @input="$v.password.$touch()"
-                        @blur="$v.password.$touch()" />
+                        @input="v$.signupData.repeatPassword.$touch()" />
                 </v-form>
-                        <p id="login-redirect-text" class="body-1 text-center"> Already have an account? 
+                        <p id="login-redirect-text" class="text-body-1 text-center"> Already have an account? 
                             <router-link to="/login"> 
-                                <span class="secondary--text" id="login-redirect">
+                                <span class="text-secondary" id="login-redirect">
                                      Login 
                                 </span> 
                             </router-link>
@@ -72,15 +70,19 @@
 </template>
 
 <script>
-import { validationMixin } from "vuelidate";
-import { required, sameAs, minLength, email } from "vuelidate/lib/validators";
-import { mapActions } from "vuex"
+import { useVuelidate } from "@vuelidate/core";
+import { required, sameAs, minLength, email } from "@vuelidate/validators";
+import { useUserStore } from "@/stores/useUserStore"
 
 export default {
     name: "SignupCard",
-
-    mixins: [validationMixin],
-
+    setup() {
+        const userStore = useUserStore()
+        return { 
+            v$: useVuelidate(),
+            userStore
+        }
+    },
     data() {
         return {
             signupData: {
@@ -91,54 +93,62 @@ export default {
             },
             alert: false
         };
-    }, methods : {
-        ...mapActions(['signup']),
+    }, 
+    validations() {
+        return {
+            signupData: {
+                email: {
+                    required,
+                    email
+                },
+                password: {
+                    required,
+                    minLength: minLength(8)
+                },
+                repeatPassword: {
+                    required,
+                    sameAsPassword: sameAs(this.signupData.password)
+                }
+            }
+        }
+    },
+    methods : {
         signupUser() {
-            this.$v.$touch();
+            this.v$.$touch();
+            if (this.v$.$invalid) {
+                return;
+            }
             let data = {
                 email: this.signupData.email,
                 password: this.signupData.password
             };
-            this.signup(data)
+            this.userStore.signup(data)
             .then(() => {
                 this.$router.push('/')
                 this.$router.go();
             })
             .catch(err => this.alert= true)
         }
-    }, validations: {
-        signupData: {
-            email: {
-                required,
-                email
-            },
-            password: {
-                required,
-                minLength: minLength(8)
-            }, 
-            repeatPassword: {
-               sameAsPassword: sameAs("password")
-            }
-        }
     }, computed: {
         emailErrors() {
             const errors = [];
-            if (!this.$v.signupData.email.$dirty) return errors;
-            !this.$v.signupData.email.email && errors.push("Must be a valid email");
-            !this.$v.signupData.email.required && errors.push("Email is required");
+            if (!this.v$.signupData.email.$dirty) return errors;
+            !this.v$.signupData.email.email.$response && errors.push("Must be a valid email");
+            !this.v$.signupData.email.required.$response && errors.push("Email is required");
             return errors;
         },
         passwordErrors() {
-            const errors =[];
-            if (!this.$v.signupData.password.$dirty) return errors;
-            !this.$v.signupData.password.minLength && errors.push("Password must be 8 characters or more");
-            !this.$v.signupData.password.required && errors.push("Password is required");
+            const errors = [];
+            if (!this.v$.signupData.password.$dirty) return errors;
+            !this.v$.signupData.password.minLength.$response && errors.push("Password must be 8 characters or more");
+            !this.v$.signupData.password.required.$response && errors.push("Password is required");
             return errors;
         },
         repeatPasswordErrors() {
-            const errors =[];
-            if (!this.$v.signupData.repeatPassword.$dirty) return errors;
-            !this.$v.signupData.repeatPassword.sameAsPassword && errors.push("Passwords must match");
+            const errors = [];
+            if (!this.v$.signupData.repeatPassword.$dirty) return errors;
+            !this.v$.signupData.repeatPassword.sameAsPassword.$response && errors.push("Passwords must match");
+            !this.v$.signupData.repeatPassword.required.$response && errors.push("Repeat password is required");
             return errors;
         }
     }

@@ -1,20 +1,20 @@
 <template>
     <div class="tutorial-card">
 		<v-card  outline color="primary" min-width="240" height="250">
-			<v-card-title class="headline background--text"> 
+			<v-card-title class="text-h5 text-background"> 
 				{{ tutorial.number }} {{ tutorial.name }} 
 			</v-card-title>
 			<v-divider/>
-				<v-card-subtitle class="title background--text"> 
+				<v-card-subtitle class="text-h6 text-background"> 
 					Category: {{ tutorial.category }} <br/>
 					Difficulty: {{ tutorial.difficulty }} <br/>
 					Points: {{ tutorial.pointsAvailable }} <br/>
 				</v-card-subtitle>
 				<div class="d-flex pl-2 pb-4" v-if="isTutorialTitleComplete(tutorial.number)">
-					<v-icon large dark color="background">
+					<v-icon size="large" color="background">
 						mdi-check-circle
 					</v-icon>
-					<v-card-subtitle class="title background--text">
+					<v-card-subtitle class="text-h6 text-background">
 						Completed
 					</v-card-subtitle>
 				</div>
@@ -23,13 +23,22 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/useUserStore'
 
 export default {
 	name: 'TutorialCard',
 	props: {
 		tutorial: Object
+	},
+	setup() {
+		const userStore = useUserStore()
+
+		const tutorialsCompleted = computed(() => userStore.tutorialsCompleted)
+
+		return {
+			tutorialsCompleted
+		}
 	},
 	methods: {
         isTutorialTitleComplete(number) {
@@ -39,7 +48,6 @@ export default {
                 return false;
             }
 		}
-	},
-	computed: mapGetters(['tutorialsCompleted'])
+	}
 }
 </script>

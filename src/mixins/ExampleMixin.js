@@ -1,4 +1,4 @@
-import Tone from "tone";
+import * as Tone from "tone";
 
 export default {
     data() {
@@ -18,13 +18,34 @@ export default {
                 this.exampleLoop = new Tone.Loop(function(time) {
                     synth.triggerAttackRelease(note, duration  ,time);
                 },interval)
-                Tone.Transport.start();
+                // Tone exports Transport as a module-level const bound to whichever context
+                // existed at import time. main.js swaps in a native AudioContext, so that
+                // static Transport belongs to a discarded context - getTransport() returns
+                // the live one.
+                Tone.getTransport().start();
                 this.exampleLoop.start(0);
             } else {
-                this.exampleLoop.stop();
-                this.exampleLoop.dispose();
+                this.stopExample();
+                // The stop button is what anyone reaches for when a note is
+                // stuck, so silence whatever is still held, not just the loop.
+                if (this.releaseHeldNotes) {
+                    this.releaseHeldNotes();
+                } else if (synth && !synth.disposed) {
+                    synth.releaseAll();
+                }
             }
             return play;
+        },
+
+        // Guarded because the button can be clicked before a loop exists, and
+        // teardown calls this whether or not one was ever started.
+        stopExample() {
+            if (!this.exampleLoop) {
+                return;
+            }
+            this.exampleLoop.stop();
+            this.exampleLoop.dispose();
+            this.exampleLoop = null;
         }
     }
 }

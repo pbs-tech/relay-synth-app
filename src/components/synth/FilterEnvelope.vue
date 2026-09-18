@@ -1,10 +1,10 @@
 <template>
     <v-container>
     <v-row align="center" justify="center">
-        <h3 class="title pa-5"> Filter Envelope </h3>
-        <v-tooltip top>
-            <template v-slot:activator="{ on }">
-                <v-btn icon v-on="on">
+        <h3 class="text-h6 pa-5"> Filter Envelope </h3>
+        <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+                <v-btn icon variant="text" v-bind="props">
                     <v-icon color="secondary">mdi-help-circle</v-icon>
                 </v-btn>
             </template>
@@ -17,28 +17,28 @@
         </v-col>
         <v-col>
             <v-row class="py-1 align-center">
-                <h4 id="filter-attack-title" class="subtitle-2"> Attack (ms): </h4> 
+                <h4 id="filter-attack-title" class="text-subtitle-2"> Attack (ms): </h4> 
                 <v-spacer/>
                 <div id="filter-attack-slider"></div>
                 <v-spacer/>
                 <div id="filter-attack-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-decay-title" class="subtitle-2"> Decay (ms): </h4>
+                <h4 id="filter-decay-title" class="text-subtitle-2"> Decay (ms): </h4>
                 <v-spacer/>
                 <div id="filter-decay-slider"></div>
                 <v-spacer/>
                 <div id="filter-decay-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-sustain-title" class="subtitle-2"> Sustain (dB): </h4>
+                <h4 id="filter-sustain-title" class="text-subtitle-2"> Sustain (dB): </h4>
                 <v-spacer/>
                 <div id="filter-sustain-slider"></div>
                 <v-spacer/>
                 <div id="filter-sustain-value"></div>
             </v-row>
             <v-row class="py-1 align-center">
-                <h4 id="filter-release-title" class="subtitle-2"> Release (ms): </h4> 
+                <h4 id="filter-release-title" class="text-subtitle-2"> Release (ms): </h4> 
                 <v-spacer/>
                 <div id="filter-release-slider"></div>
                 <v-spacer/>
@@ -51,33 +51,58 @@
 
 
 <script>
-import Tone from "tone";
+import * as Tone from "tone";
 import axios from "axios";
 import Nexus from "nexusui";
-import {mapGetters, mapMutations } from 'vuex';
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
 import FilterEnvelopeMixin from '@/mixins/FilterEnvelopeMixin';
 import UIMixin from '@/mixins/UIMixin';
 
 export default {
     name: 'FilterEnvelope',
     mixins: [FilterEnvelopeMixin, UIMixin],
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const userSynthData = computed(() => synthsStore.userSynthData)
+        const userSynth = computed(() => synthsStore.userSynth)
+
+        return {
+            userSynthData,
+            userSynth
+        }
+    },
     data() {
         return {
             startPoint: { x: 0.01, y: 0.01 },
         }
     },
     created() {
-       Nexus.context = Tone.context;
+       // Nexus needs a real AudioContext. Tone 13 proxied the AudioContext
+       // methods on Tone.context, but Tone 14 wraps it, so Nexus called
+       // createScriptProcessor on the wrapper and threw. Hand it the raw one,
+       // which keeps Nexus and Tone on the same context.
+       Nexus.context = Tone.getContext().rawContext;
     },
-    computed: mapGetters(['userSynthData','userSynth']),
 
     mounted() {
+        // Nexus resolves its mount points with document.getElementById, and
+        // mounted() does not guarantee this subtree is in the document yet -
+        // under a lazily routed view in Vue 3 it is not, so the lookup returned
+        // nothing and Nexus threw before any control was built. Defer a tick.
 
-        this.initUi();
-        this.setFilterAttackListener(this.userSynth, this.attackSlider, this.envelope);
-        this.setFilterDecayListener(this.userSynth, this.decaySlider, this.envelope);
-        this.setFilterSustainListener(this.userSynth, this.sustainSlider, this.envelope);
-        this.setFilterReleaseListener(this.userSynth, this.releaseSlider, this.envelope);
+        this.$nextTick(() => {
+
+            this.initUi();
+            this.setFilterAttackListener(this.userSynth, this.attackSlider, this.envelope);
+            this.setFilterDecayListener(this.userSynth, this.decaySlider, this.envelope);
+            this.setFilterSustainListener(this.userSynth, this.sustainSlider, this.envelope);
+            this.setFilterReleaseListener(this.userSynth, this.releaseSlider, this.envelope);
+
+    
+
+        });
 
     },
     methods: {

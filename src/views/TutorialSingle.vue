@@ -2,15 +2,15 @@
     <v-container class="my-5">
         <TutorialText v-bind:tutorialId="tutorialId"/>
             <v-row v-if="showAnswer" justify="center" align="center"> 
-                <h2 class="title secondary--text pa-1"> Answer: </h2>{{ tutorialParams }}
+                <h2 class="text-h6 text-secondary pa-1"> Answer: </h2>{{ tutorialParams }}
             </v-row>
             <v-row justify="center" align="center"> 
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
-                        <h2  class="pa-1 title"> Example Sound</h2>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-btn icon v-on="on">
+                        <h2  class="pa-1 text-h6"> Example Sound</h2>
+                        <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-btn icon variant="text" v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
@@ -21,14 +21,14 @@
                 </v-col>
                 <v-col justify="center" align="center">
                     <v-row justify="center" align="center">
-                        <h2 class="pa-1 title dark--text"> Your Sound </h2>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-btn icon v-on="on">
+                        <h2 class="pa-1 text-h6 text-dark"> Your Sound </h2>
+                        <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                                <v-btn icon variant="text" v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
-                            <span class="body-2"> This is the sound you are creating, click on the piano, use your keyboard or the play button to hear and see it.</span>
+                            <span class="text-body-2"> This is the sound you are creating, click on the piano, use your keyboard or the play button to hear and see it.</span>
                         </v-tooltip>
                     </v-row>
                     <UserSynth v-bind:tutorialId="tutorialId"/>
@@ -52,9 +52,9 @@
 </template>
 
 <script>
-
-import { mapGetters, mapMutations } from 'vuex';
-import Tone from "tone";
+import { computed } from 'vue'
+import { useSynthsStore } from '@/stores/useSynthsStore'
+import * as Tone from "tone";
 import axios from "axios";
 import Nexus from "nexusui";
 import TutorialText from "@/components/tutorial/single/TutorialText";
@@ -83,22 +83,46 @@ export default {
         FilterEnvelope
 
     },
+    setup() {
+        const synthsStore = useSynthsStore()
+
+        const envRequired = computed(() => synthsStore.envRequired)
+        const filterRequired = computed(() => synthsStore.filterRequired)
+        const oscRequired = computed(() => synthsStore.oscRequired)
+        const filterEnvRequired = computed(() => synthsStore.filterEnvRequired)
+        const showAnswer = computed(() => synthsStore.showAnswer)
+        const tutorialParams = computed(() => synthsStore.tutorialParams)
+
+        const resetTutorial = () => {
+            synthsStore.resetTutorial()
+        }
+
+        return {
+            envRequired,
+            filterRequired,
+            oscRequired,
+            filterEnvRequired,
+            showAnswer,
+            tutorialParams,
+            resetTutorial
+        }
+    },
     data() {
         return {
             answer: "",
         }
     },
-    computed: mapGetters(['envRequired', 'filterRequired','oscRequired',,'filterEnvRequired','showAnswer','tutorialParams']),
     created() {
         this.tutorialId = this.$route.params.id;
-        Nexus.colors.accent = this.$vuetify.theme.themes.light.primary; 
-        Nexus.context = Tone.context;
+        Nexus.colors.accent = this.$vuetify.theme.current.colors.primary; 
+        // Nexus needs a real AudioContext. Tone 13 proxied the AudioContext
+       // methods on Tone.context, but Tone 14 wraps it, so Nexus called
+       // createScriptProcessor on the wrapper and threw. Hand it the raw one,
+       // which keeps Nexus and Tone on the same context.
+       Nexus.context = Tone.getContext().rawContext;
    
     },
-    methods: {
-        ...mapMutations(['resetTutorial'])
-    },
-    destroyed() {
+    unmounted() {
         this.resetTutorial();
     }
 }

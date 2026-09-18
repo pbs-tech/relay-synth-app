@@ -1,50 +1,34 @@
-
-const getStore = () => cy.window().its('app.$store');
 describe('Tutorial Single', () => {
-
     beforeEach(function() {
-        cy.visit('/');
-        it('loads', () => {
-            cy.window()
-            .its('app')
-        })  
-        getStore().then((store) => {
-            store.dispatch('login', { email: 'alex_peebles@outlook.com',
-            password: '***REMOVED***'});
-        })
-        getStore().its('getters.isLoggedIn').should('eq', true);
+        cy.loginByStore();
         cy.visit('/tutorials/1');
-
     })
+
     it('should allow logged in user to visit tutorials page', function() {
         cy.contains('Sine Waves');
-
     })
     it('should play the tutorial and user synth with the play button', function() {
-        cy.wait(1000);
         cy.get('#tutorial-play-button').click();
         cy.wait(4000);
         cy.get('#tutorial-play-button').click();
-        cy.wait(1000);
         cy.get('#user-play-button').click();
         cy.wait(4000);
         cy.get('#user-play-button').click();
     })
 
+    // The oscillator control is a Nexus-rendered <select> inside #osc-select.
+    // These previously targeted #waveform-select and #select-oscillator, which
+    // do not exist in the markup.
     it('Should select an incorrect option from the dropdown menu and submit the answer', function() {
-        cy.get('#waveform-select').click();
-        cy.contains('Waveform 1').click();
-        cy.get('#select-oscillator').click();
+        cy.get('#osc-select select').select('Waveform 1');
         cy.get('#user-play-button').click();
         cy.wait(2000);
         cy.get('#user-play-button').click();
         cy.get('#check-answer').click();
         cy.contains('Incorrect!! Try playing the example again');
     })
-    it('Should select  thecorrect option from the dropdown menu and submit the answer', function() {
-        cy.get('#waveform-select').click();
-        cy.contains('Waveform 2').click();
-        cy.get('#select-oscillator').click();
+    it('Should select the correct option from the dropdown menu and submit the answer', function() {
+        cy.get('#osc-select select').select('Waveform 2');
         cy.get('#user-play-button').click();
         cy.wait(2000);
         cy.get('#user-play-button').click();

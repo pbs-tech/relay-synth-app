@@ -12,13 +12,13 @@
         </v-snackbar>
         <v-card width="400" class="mx-auto ma-9">
                 <v-toolbar color="primary" dark flat>
-                    <v-toolbar-title class="display-1 background--text" id="login-title"> Login </v-toolbar-title>
+                    <v-toolbar-title class="text-h4 text-background" id="login-title"> Login </v-toolbar-title>
                     <v-spacer/>
                 </v-toolbar>
             <v-card-text>
                 <v-form>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="login-email-field"
                         label="Email" 
                         name="email"
@@ -27,7 +27,7 @@
                         v-model="loginData.email"
                         required/>
                     <v-text-field 
-                        class="body-1"
+                        class="text-body-1"
                         id="login-password-field"
                         type="password" 
                         label="Password" 
@@ -36,7 +36,7 @@
                         v-model="loginData.password"
                         required/>
                 </v-form>
-                        <p id="signup-redirect-text" class="body-1 text-center"> Need an account? <router-link to="/signup"><span class="secondary--text" id="signup-redirect"> Signup </span></router-link></p>
+                        <p id="signup-redirect-text" class="text-body-1 text-center"> Need an account? <router-link to="/signup"><span class="text-secondary" id="signup-redirect"> Signup </span></router-link></p>
             </v-card-text>
             <v-divider/>
             <v-card-actions>
@@ -47,12 +47,19 @@
     </v-container>
 </template>
 <script>
-import { validationMixin } from "vuelidate";
-import { required, email } from "vuelidate/lib/validators";
-import { mapActions } from "vuex"
+import { useVuelidate } from "@vuelidate/core";
+import { required, email } from "@vuelidate/validators";
+import { useUserStore } from "@/stores/useUserStore"
 export default {
     
     name: "LoginCard",
+    setup() {
+        const userStore = useUserStore()
+        return { 
+            v$: useVuelidate(),
+            userStore
+        }
+    },
     data() {
         return {
             showPassword: false,
@@ -62,26 +69,34 @@ export default {
             },
             alert: false
         };
-    }, methods : {
-        ...mapActions(['login']),
+    }, 
+    validations() {
+        return {
+            loginData: {
+                email: {
+                    required,
+                    email
+                },
+                password: {
+                    required
+                }
+            }
+        }
+    },
+    methods : {
         loginUser() {
+            this.v$.$touch();
+            if (this.v$.$invalid) {
+                return;
+            }
             let email = this.loginData.email;
             let password = this.loginData.password;
-            this.login({ email, password })
+            this.userStore.login({ email, password })
             .then(() => {
                 this.$router.push('/')
                 this.$router.go();
             })
             .catch(err => this.alert = true);           
-        }
-    }, validations: {
-        loginData: {
-            email: {
-                required
-            },
-            password: {
-                required
-            }
         }
     }
 }
