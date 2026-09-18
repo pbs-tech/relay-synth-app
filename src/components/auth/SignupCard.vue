@@ -127,7 +127,7 @@ export default {
                 this.$router.push('/')
                 this.$router.go();
             })
-            .catch(err => this.alert= true)
+            .catch(() => { this.alert = true })
         }
     }, computed: {
         emailErrors() {

@@ -76,14 +76,14 @@
 		<p class="text-justify text-body-1">
 			<strong> Aspects of tutorials adapted from </strong> <br/>
 			Russ, M. (2002). Sound Synthesis and Sampling. Focal Press, pp.75–100. <br/>
-			Robehmed, N. (2019). Sine, Square, Triangle, Saw : Synth Waveforms - Perfect Circuit. [online] www.perfectcircuit.com. Available at: https://www.perfectcircuit.com/signal/difference-between-waveforms [Accessed 13 Apr. 2020].
+			Robehmed, N. (2019). Sine, Square, Triangle, Saw&#8239;: Synth Waveforms - Perfect Circuit. [online] www.perfectcircuit.com. Available at: https://www.perfectcircuit.com/signal/difference-between-waveforms [Accessed 13 Apr. 2020].
 		</p>
     </v-container>
 </template>
 
 <script>
 export default {
-  	name: 'about',
+	name: 'about',
 	data() {
 		return {
 			backEnd: [
@@ -151,7 +151,7 @@ export default {
 					link: 	"https://nexus-js.github.io/ui/api/#intro"
 				}
 			]
-	  	}
+		}
 	},
 	methods: {
 		getImgUrl(pic) {

@@ -52,7 +52,6 @@
 
 <script>
 import * as Tone from "tone";
-import axios from "axios";
 import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'

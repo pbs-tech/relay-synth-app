@@ -34,7 +34,6 @@
     </div>
 </template>
 <script>
-import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import { useExampleStore } from '@/stores/useExampleStore'
@@ -86,7 +85,7 @@ export default {
 
         this.$nextTick(() => {
             this.initUi();
-            this.fetchTutorialSynthData(this.tutorialId).then(response => {
+            this.fetchTutorialSynthData(this.tutorialId).then(() => {
                 this.setOscListener(this.tutorialSynth, this.oscilloscope);
                 this.setClickListener(this.tutorialSynth, this.piano);
                 this.setVolumeChangeListener(this.tutorialSynth, this.volumeSlider);

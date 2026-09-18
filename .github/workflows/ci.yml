@@ -51,3 +51,40 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The auto-merge workflow is ~60 lines of bash that decide whether a
+      # dependency bump merges without a human reading it. Nothing checked it:
+      # a typo in the polling loop would only surface on a live Dependabot PR,
+      # which is the worst place to find out. actionlint validates workflow
+      # syntax, action references and ${{ }} contexts, and runs shellcheck over
+      # every `run:` block, so that script is covered statically.
+      - name: Install actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.7
+        run: |
+          set -euo pipefail
+          curl -sSfL -o actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint --version
+
+      # actionlint silently skips its shell checks when shellcheck is absent,
+      # which would leave this job passing while testing half of what it claims
+      # to. shellcheck ships in the ubuntu-latest image; fail loudly if that
+      # ever stops being true rather than quietly weakening the gate.
+      - name: Check shellcheck is available
+        run: |
+          command -v shellcheck >/dev/null 2>&1 || {
+            echo "::error::shellcheck not found - actionlint would skip shell script checks"
+            exit 1
+          }
+          shellcheck --version
+
+      - name: Lint workflows
+        run: ./actionlint -color

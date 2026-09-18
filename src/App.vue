@@ -15,9 +15,9 @@ import { useUserStore } from '@/stores/useUserStore'
 
 export default {
 	name: 'App',
-  	components: { SiteNav },
-  	created:
-  	function(){
+	components: { SiteNav },
+	created:
+	function(){
 		// Was `this.$store.dispatch(logout)`: Vuex no longer exists and `logout`
 		// was an undefined variable, so this handler threw instead of logging
 		// the user out. Axios also reports the status on err.response.
@@ -28,11 +28,11 @@ export default {
 			}
 			return Promise.reject(err)
 		});
-	  },
-	  watch: {
-		  $route(to, from) {
-			  document.title = 'Relay Synth - ' +  `${to.meta.title}` || 'Relay Synth'
-		  }
-	  }
+	},
+	watch: {
+		$route(to) {
+			document.title = 'Relay Synth - ' +  `${to.meta.title}` || 'Relay Synth'
+		}
+	}
 };
 </script>

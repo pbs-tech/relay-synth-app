@@ -34,7 +34,6 @@
     </div>
 </template>
 <script>
-import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import { useExampleStore } from '@/stores/useExampleStore'
