@@ -1,0 +1,87 @@
+# Dependency updates for the npm package at the root and the actions used in
+# .github/workflows.
+#
+# Major updates are ignored. The auto-merge workflow only ever takes minor and
+# patch bumps, so a major can only land through a deliberate migration - the
+# Vue 3 move on master is what that looks like - and raising them here would
+# just queue PRs that sit until someone does that work. Drop the ignore block
+# when there is appetite to take majors one at a time.
+#
+# Dependabot security alerts are unaffected by this: they are configured
+# separately and still fire on a vulnerable dependency regardless of what
+# version updates are ignored here.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Europe/London
+    open-pull-requests-limit: 5
+    ignore:
+      # The stack cannot absorb a major without deliberate migration work.
+      - dependency-name: '*'
+        update-types:
+          - version-update:semver-major
+    groups:
+      # The @vue/cli-* plugins and cli-service are released as a set and check
+      # each other's versions, so they are only coherent moved together.
+      vue-cli:
+        patterns:
+          - '@vue/cli-*'
+        update-types:
+          - minor
+          - patch
+      # The runtime framework set. @vue/compiler-sfc is versioned in lockstep
+      # with vue itself and will not compile against a different minor, so it
+      # travels with this group rather than with the dev dependencies.
+      vue:
+        patterns:
+          - 'vue'
+          - 'vue-router'
+          - 'vuetify'
+          - 'pinia'
+          - '@vuelidate/*'
+          - '@vue/compiler-sfc'
+        update-types:
+          - minor
+          - patch
+      production-dependencies:
+        dependency-type: production
+        exclude-patterns:
+          - 'vue'
+          - 'vue-router'
+          - 'vuetify'
+          - 'pinia'
+          - '@vuelidate/*'
+        update-types:
+          - minor
+          - patch
+      development-dependencies:
+        dependency-type: development
+        exclude-patterns:
+          - '@vue/cli-*'
+          - '@vue/compiler-sfc'
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    # '/' means .github/workflows for this ecosystem, not a directory named '/'.
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+      timezone: Europe/London
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
