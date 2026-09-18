@@ -42,7 +42,7 @@ export default {
         FilterEnvelope
     },
     created() {
-        Nexus.colors.accent = this.$vuetify.theme.current.value.colors.primary;    
+        Nexus.colors.accent = this.$vuetify.theme.current.colors.primary;    
     }
 }
 </script>

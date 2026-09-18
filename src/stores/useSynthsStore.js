@@ -21,19 +21,15 @@ export const useSynthsStore = defineStore('synths', {
     showAnswer: false
   }),
 
+  // These were Vuex getters that simply re-exported state. Vuex kept getters and
+  // state in separate namespaces, so that was a harmless passthrough; Pinia puts
+  // both on one object, where a getter of the same name shadows the state
+  // property and makes it read-only - so every `this.userSynth = ...` in an
+  // action threw and no synth was ever built. Pinia exposes state on the store
+  // directly, so callers such as `synthsStore.userSynth` are unaffected.
   getters: {
     tutorialSynthData: (state) => state.tutorialSynthData,
-    tutorialSynth: (state) => state.tutorialSynth,
-    userSynth: (state) => state.userSynth,
-    userSynthData: (state) => state.userSynthData,
-    matching: (state) => state.matching,
-    filterRequired: (state) => state.filterRequired,
-    filterEnvRequired: (state) => state.filterEnvRequired,
-    envRequired: (state) => state.envRequired,
-    oscRequired: (state) => state.oscRequired,
-    noOfGuesses: (state) => state.noOfGuesses,
-    showAnswer: (state) => state.showAnswer,
-    tutorialParams: (state) => state.tutorialParams
+    userSynthData: (state) => state.userSynthData
   },
 
   actions: {

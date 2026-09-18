@@ -114,8 +114,12 @@ export default {
     },
     created() {
         this.tutorialId = this.$route.params.id;
-        Nexus.colors.accent = this.$vuetify.theme.current.value.colors.primary; 
-        Nexus.context = Tone.context;
+        Nexus.colors.accent = this.$vuetify.theme.current.colors.primary; 
+        // Nexus needs a real AudioContext. Tone 13 proxied the AudioContext
+       // methods on Tone.context, but Tone 14 wraps it, so Nexus called
+       // createScriptProcessor on the wrapper and threw. Hand it the raw one,
+       // which keeps Nexus and Tone on the same context.
+       Nexus.context = Tone.getContext().rawContext;
    
     },
     unmounted() {

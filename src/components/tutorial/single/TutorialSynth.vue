@@ -80,12 +80,22 @@ export default {
     },
 
     mounted() {
-        this.initUi();
-        this.fetchTutorialSynthData(this.tutorialId).then(response => {
-            this.setOscListener(this.tutorialSynth, this.oscilloscope);
-            this.setClickListener(this.tutorialSynth, this.piano);
-            this.setVolumeChangeListener(this.tutorialSynth, this.volumeSlider);
-        })
+        // Nexus resolves its mount points with document.getElementById, and
+        // mounted() does not guarantee this subtree is in the document yet -
+        // under a lazily routed view in Vue 3 it is not, so the lookup returned
+        // nothing and Nexus threw before any control was built. Defer a tick.
+
+        this.$nextTick(() => {
+            this.initUi();
+            this.fetchTutorialSynthData(this.tutorialId).then(response => {
+                this.setOscListener(this.tutorialSynth, this.oscilloscope);
+                this.setClickListener(this.tutorialSynth, this.piano);
+                this.setVolumeChangeListener(this.tutorialSynth, this.volumeSlider);
+            })
+    
+
+        });
+
     },
     methods: {
         initUi() {

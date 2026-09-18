@@ -5,7 +5,10 @@ import { createPinia } from 'pinia'
 import { useUserStore } from './stores/useUserStore'
 import vuetify from './plugins/vuetify'
 import Axios from 'axios'
-import { installAudioUnlock } from './util/audioContext'
+import { installAudioUnlock, installNativeAudioContext } from './util/audioContext'
+
+// Must run before any Tone node is created (see the module for why).
+installNativeAudioContext()
 
 const token = localStorage.getItem('token')
 if (token) {

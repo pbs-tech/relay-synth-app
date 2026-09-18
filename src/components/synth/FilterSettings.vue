@@ -64,17 +64,31 @@ export default {
     },
 
     created() {
-       Nexus.context = Tone.context;
+       // Nexus needs a real AudioContext. Tone 13 proxied the AudioContext
+       // methods on Tone.context, but Tone 14 wraps it, so Nexus called
+       // createScriptProcessor on the wrapper and threw. Hand it the raw one,
+       // which keeps Nexus and Tone on the same context.
+       Nexus.context = Tone.getContext().rawContext;
     },
 
     mounted() {
-        this.initUi();
-        this.setFilterType(this.userSynth, this.selectFilterType, this.envelope);
-        // Previously missing. createFilterCutoffSlider and setFilterCutoffListener
-        // both existed but were never called, so the cutoff was permanently
-        // whatever setFilterClickListener applied on mount and no tutorial could
-        // ask for any other value.
-        this.setFilterCutoffListener(this.userSynth, this.cutoffSlider, this.envelope);
+        // Nexus resolves its mount points with document.getElementById, and
+        // mounted() does not guarantee this subtree is in the document yet -
+        // under a lazily routed view in Vue 3 it is not, so the lookup returned
+        // nothing and Nexus threw before any control was built. Defer a tick.
+
+        this.$nextTick(() => {
+            this.initUi();
+            this.setFilterType(this.userSynth, this.selectFilterType, this.envelope);
+            // Previously missing. createFilterCutoffSlider and setFilterCutoffListener
+            // both existed but were never called, so the cutoff was permanently
+            // whatever setFilterClickListener applied on mount and no tutorial could
+            // ask for any other value.
+            this.setFilterCutoffListener(this.userSynth, this.cutoffSlider, this.envelope);
+    
+
+        });
+
     },
     methods: {
         initUi() {
