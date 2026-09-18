@@ -4,7 +4,7 @@
             <h3 class="text-h6 pa-5"> Oscillator </h3> 
             <v-tooltip location="top">
                 <template v-slot:activator="{ props }">
-                    <v-btn icon v-bind="props">
+                    <v-btn icon variant="text" v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>

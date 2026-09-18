@@ -10,7 +10,7 @@
                         <h2  class="pa-1 text-h6"> Example Sound</h2>
                         <v-tooltip location="top">
                             <template v-slot:activator="{ props }">
-                                <v-btn icon v-bind="props">
+                                <v-btn icon variant="text" v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
@@ -24,7 +24,7 @@
                         <h2 class="pa-1 text-h6 text-dark"> Your Sound </h2>
                         <v-tooltip location="top">
                             <template v-slot:activator="{ props }">
-                                <v-btn icon v-bind="props">
+                                <v-btn icon variant="text" v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
