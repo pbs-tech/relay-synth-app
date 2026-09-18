@@ -36,13 +36,24 @@ export default  {
             // Releasing the mouse outside the piano, or losing focus mid-note,
             // means the matching 'off' never arrives. Drop everything rather
             // than leave it droning.
-            window.addEventListener('blur', function() {
-                if (!sounding.size) {
-                    return;
-                }
+            this.blurHandler = function() {
                 sounding.clear();
-                synth.releaseAll();
-            })
+                if (synth && !synth.disposed) {
+                    synth.releaseAll();
+                }
+            }
+            window.addEventListener('blur', this.blurHandler)
+
+            // Lets the component silence held notes without knowing how they
+            // are tracked - used on teardown and by the stop button.
+            this.releaseHeldNotes = this.blurHandler
+        },
+
+        teardownClickListener() {
+            if (this.blurHandler) {
+                window.removeEventListener('blur', this.blurHandler)
+                this.blurHandler = null
+            }
         },
         setVolumeChangeListener(synth, slider) {
             slider.on('change', function(v) {

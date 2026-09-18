@@ -35,7 +35,6 @@
 </template>
 <script>
 import Nexus from "nexusui";
-import * as Tone from "tone";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import { useExampleStore } from '@/stores/useExampleStore'
@@ -108,12 +107,23 @@ export default {
         }
     },
     unmounted() {
-        Tone.getTransport().cancel();
-        Tone.getTransport().stop();
-        this.oscilloscope.destroy();
-        this.volumeSlider.destroy();
-        this.volumeNumber.destroy();
-        this.piano.destroy();
+        // See UserSynth: volumeNumber is never assigned, and destroying it threw
+        // before the piano was ever torn down.
+        this.teardownClickListener();
+        if (this.releaseHeldNotes) {
+            this.releaseHeldNotes();
+        }
+        // Deliberately not touching the Transport. It is global and shared, and
+        // cancelling it strands voices: a note played after a cancel never gets
+        // its onsilence callback, so it is never returned to the pool and
+        // activeVoices climbs until maxPolyphony silences the synth. Measured:
+        // a note leaves 0 active voices normally and 1 after a Transport
+        // cancel+stop. stopExample() already disposes the only thing this
+        // component schedules.
+        this.stopExample();
+        if (this.oscilloscope) this.oscilloscope.destroy();
+        if (this.volumeSlider) this.volumeSlider.destroy();
+        if (this.piano) this.piano.destroy();
     }  
 }
 </script>

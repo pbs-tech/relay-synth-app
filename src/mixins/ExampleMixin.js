@@ -25,10 +25,27 @@ export default {
                 Tone.getTransport().start();
                 this.exampleLoop.start(0);
             } else {
-                this.exampleLoop.stop();
-                this.exampleLoop.dispose();
+                this.stopExample();
+                // The stop button is what anyone reaches for when a note is
+                // stuck, so silence whatever is still held, not just the loop.
+                if (this.releaseHeldNotes) {
+                    this.releaseHeldNotes();
+                } else if (synth && !synth.disposed) {
+                    synth.releaseAll();
+                }
             }
             return play;
+        },
+
+        // Guarded because the button can be clicked before a loop exists, and
+        // teardown calls this whether or not one was ever started.
+        stopExample() {
+            if (!this.exampleLoop) {
+                return;
+            }
+            this.exampleLoop.stop();
+            this.exampleLoop.dispose();
+            this.exampleLoop = null;
         }
     }
 }

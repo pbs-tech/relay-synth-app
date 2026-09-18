@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { markRaw } from 'vue'
 import axios from 'axios'
 import * as Tone from 'tone'
 import synthTypes from '../util/SynthTypes'
@@ -76,14 +77,51 @@ export const useSynthsStore = defineStore('synths', {
       this.synthType = synthTypes.get(synthData.type)
     },
 
+    // markRaw is essential. Pinia state is reactive, so without it the synth is
+    // stored as a Vue Proxy, and Tone reclaims a finished voice by identity:
+    // _makeVoiceAvailable does _activeVoices.findIndex(e => e.voice === voice).
+    // Read through the proxy those entries are proxies while the voice handed
+    // to the callback is raw, so the comparison never matches, findIndex
+    // returns -1 and splice(-1, 1) drops an unrelated entry. Voices are then
+    // never returned to the pool: activeVoices only climbs, and at the 32 voice
+    // limit notes stop sounding at all. Measured before the fix: every lookup
+    // returned -1.
+    //
+    // Components must not dispose these either - Vue 3 runs unmounted() after
+    // the next route component has mounted, so an outgoing component would
+    // destroy the incoming one's synth.
+    // The user synth takes no per-instance options, so it is built once and
+    // reused rather than rebuilt on every mount.
     setUserSynth() {
-      this.userSynth = new Tone.PolySynth(Tone.MonoSynth).toDestination()
+      if (!this.userSynth || this.userSynth.disposed) {
+        this.userSynth = markRaw(new Tone.PolySynth(Tone.MonoSynth).toDestination())
+      } else {
+        this.userSynth.releaseAll()
+      }
       this.userSynth.volume.value = this.DEFAULT_VOLUME
     },
 
+    // Built fresh per tutorial, because the voice options are constructor
+    // arguments and set() would merge onto the previous tutorial's settings.
+    // The one it replaces is disposed here so it is not left running.
     setTutorialSynth(tutorialSynthData) {
-      this.tutorialSynth = new Tone.PolySynth(Tone.MonoSynth, tutorialSynthData.parameters).toDestination()
+      if (this.tutorialSynth && !this.tutorialSynth.disposed) {
+        this.tutorialSynth.releaseAll()
+        this.tutorialSynth.dispose()
+      }
+      this.tutorialSynth = markRaw(
+        new Tone.PolySynth(Tone.MonoSynth, tutorialSynthData.parameters).toDestination()
+      )
       this.tutorialSynth.volume.value = this.DEFAULT_VOLUME
+    },
+
+    releaseAllNotes() {
+      for (const key of ['userSynth', 'tutorialSynth']) {
+        const synth = this[key]
+        if (synth && !synth.disposed) {
+          synth.releaseAll()
+        }
+      }
     },
 
     setRequirements(parameters) {
