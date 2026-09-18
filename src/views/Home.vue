@@ -1,6 +1,6 @@
 <template>
-  	<div class="home">
-    	<v-container fluid class="ma-0 pa-0">
+	<div class="home">
+		<v-container fluid class="ma-0 pa-0">
 			<v-layout row wrap>
 				<v-row no-gutters>
 					<v-col fixed>
@@ -33,8 +33,8 @@
 					</v-col>
 				</v-row>
 			</v-layout>
-    	</v-container>
- 	</div>
+		</v-container>
+	</div>
 </template>
 <script>
 

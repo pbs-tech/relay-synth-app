@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import * as Tone from "tone";
 import Nexus from "nexusui";
 import UserSynth from "@/components/synth/UserSynth";
 import Oscillator from "@/components/synth/Oscillator";

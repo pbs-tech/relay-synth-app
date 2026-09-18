@@ -17,8 +17,6 @@
     </v-container>
 </template>
 <script>
-import * as Tone from "tone";
-import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import SynthMixin from '@/mixins/SynthMixin';

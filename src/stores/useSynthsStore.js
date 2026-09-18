@@ -125,10 +125,10 @@ export const useSynthsStore = defineStore('synths', {
     },
 
     setRequirements(parameters) {
-      this.oscRequired = parameters.hasOwnProperty('oscillator')
-      this.envRequired = parameters.hasOwnProperty('envelope')
-      this.filterRequired = parameters.hasOwnProperty('filter')
-      this.filterEnvRequired = parameters.hasOwnProperty('filterEnvelope')
+      this.oscRequired = Object.prototype.hasOwnProperty.call(parameters, 'oscillator')
+      this.envRequired = Object.prototype.hasOwnProperty.call(parameters, 'envelope')
+      this.filterRequired = Object.prototype.hasOwnProperty.call(parameters, 'filter')
+      this.filterEnvRequired = Object.prototype.hasOwnProperty.call(parameters, 'filterEnvelope')
     },
 
     setMatching(matching) {

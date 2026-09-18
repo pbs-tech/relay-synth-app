@@ -55,7 +55,6 @@
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import * as Tone from "tone";
-import axios from "axios";
 import Nexus from "nexusui";
 import TutorialText from "@/components/tutorial/single/TutorialText";
 import TutorialSynth from "@/components/tutorial/single/TutorialSynth";
