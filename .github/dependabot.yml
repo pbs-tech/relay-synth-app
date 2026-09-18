@@ -1,11 +1,11 @@
 # Dependency updates for the npm package at the root and the actions used in
 # .github/workflows.
 #
-# This repository is on Vue 2 with vue-cli 4, both out of support. Nearly every
-# direct dependency has a major behind it that cannot be taken without a
-# framework migration - Vue 3, vite, eslint 9 and so on - so major updates are
-# ignored outright rather than raised as PRs that would be closed unread. When
-# the migration happens, drop the ignore block and the majors come back.
+# Major updates are ignored. The auto-merge workflow only ever takes minor and
+# patch bumps, so a major can only land through a deliberate migration - the
+# Vue 3 move on master is what that looks like - and raising them here would
+# just queue PRs that sit until someone does that work. Drop the ignore block
+# when there is appetite to take majors one at a time.
 #
 # Dependabot security alerts are unaffected by this: they are configured
 # separately and still fire on a vulnerable dependency regardless of what
@@ -32,17 +32,20 @@ updates:
       vue-cli:
         patterns:
           - '@vue/cli-*'
-          - 'vue-cli-plugin-*'
         update-types:
           - minor
           - patch
+      # The runtime framework set. @vue/compiler-sfc is versioned in lockstep
+      # with vue itself and will not compile against a different minor, so it
+      # travels with this group rather than with the dev dependencies.
       vue:
         patterns:
           - 'vue'
           - 'vue-router'
-          - 'vuex'
           - 'vuetify'
-          - 'vue-template-compiler'
+          - 'pinia'
+          - '@vuelidate/*'
+          - '@vue/compiler-sfc'
         update-types:
           - minor
           - patch
@@ -51,8 +54,9 @@ updates:
         exclude-patterns:
           - 'vue'
           - 'vue-router'
-          - 'vuex'
           - 'vuetify'
+          - 'pinia'
+          - '@vuelidate/*'
         update-types:
           - minor
           - patch
@@ -60,8 +64,7 @@ updates:
         dependency-type: development
         exclude-patterns:
           - '@vue/cli-*'
-          - 'vue-cli-plugin-*'
-          - 'vue-template-compiler'
+          - '@vue/compiler-sfc'
         update-types:
           - minor
           - patch
