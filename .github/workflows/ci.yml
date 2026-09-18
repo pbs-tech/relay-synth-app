@@ -1,0 +1,53 @@
+# PR checks for the Vue app. There were none before, which meant a dependency
+# bump could only be judged by reading it; this gives the auto-merge workflow
+# something real to gate on.
+name: CI
+
+on: pull_request
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Cypress 16 declares `node: ^22 || ^24 || >=26`, so 18 cannot install the
+  # tree at all. 22 is the current LTS in that set. vue-cli-service 5 builds
+  # with webpack 5, which no longer hashes module ids with md4, so the
+  # --openssl-legacy-provider flag the Vue 2 toolchain needed is gone with it.
+  NODE_VERSION: '22'
+
+jobs:
+  application:
+    name: Lint, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Cypress' postinstall downloads its ~200MB browser binary, which this
+      # job never uses - it lints, unit tests and builds, it does not run e2e.
+      # Skipping the download keeps the install fast and takes a network round
+      # trip to a third-party CDN out of the critical path of every PR.
+      - name: Install dependencies
+        run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+
+      # vue-cli-service lint rewrites files in place unless told not to. In CI
+      # the point is to report, so --no-fix keeps it from silently "passing" on
+      # a working tree it just edited and threw away.
+      - name: Lint
+        run: npm run lint -- --no-fix
+
+      - name: Test
+        run: npm run test:unit
+
+      - name: Build
+        run: npm run build
