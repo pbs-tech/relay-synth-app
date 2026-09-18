@@ -16,23 +16,28 @@ describe('Nav (routes with no auth required)', function() {
         cy.url().should('include','/about');
         cy.contains('About');
     })
-    it('Visits Login', function() {
+    // Login and Signup are Auth0 Universal Login now, not in-app pages, so both
+    // buttons leave the origin entirely. There is nothing to assert here beyond
+    // arriving at the tenant's authorize endpoint - the rest is Auth0's to test.
+    it('Sends Login to Auth0', function() {
         cy.visit('/');
         cy.get('#login-button').click();
-        cy.url().should('include','/login');
-        cy.contains('Login');
+        cy.origin(`https://${Cypress.env('auth0Domain')}`, () => {
+            cy.url().should('include', '/authorize');
+        })
     })
-    it('Visits Signup', function() {
+    it('Sends Signup to Auth0', function() {
         cy.visit('/');
         cy.get('#signup-button').click();
-        cy.url().should('include','/signup');
-        cy.contains('Signup');
+        cy.origin(`https://${Cypress.env('auth0Domain')}`, () => {
+            cy.url().should('include', 'screen_hint=signup');
+        })
     })
 })
 
 describe('Nav (routes with auth required)', function() {
     beforeEach(function() {
-        cy.loginByStore();
+        cy.loginByAuth0();
         cy.get('#drawer').click();
     })
 

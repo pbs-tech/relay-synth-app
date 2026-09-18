@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { markRaw } from 'vue'
-import axios from 'axios'
+import http from '@/api/http'
 import * as Tone from 'tone'
 import synthTypes from '../util/SynthTypes'
 
@@ -35,14 +35,14 @@ export const useSynthsStore = defineStore('synths', {
 
   actions: {
     async fetchTutorialSynthData(tutorialId) {
-      const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/synth')
+      const response = await http.get('/tutorials/' + tutorialId + '/synth')
       this.setRequirements(response.data.parameters)
       this.setTutorialSynth(response.data)
     },
 
     async fetchSynthBase(tutorialId) {
       console.log('fetching synth settings')
-      const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/synth/settings')
+      const response = await http.get('/tutorials/' + tutorialId + '/synth/settings')
       this.setSynthBase(response.data)
     },
 

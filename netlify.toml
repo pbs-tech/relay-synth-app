@@ -10,3 +10,17 @@
   # would otherwise download the ~300MB Cypress binary on every deploy. The
   # site build never runs Cypress, so skip it.
   CYPRESS_INSTALL_BINARY = "0"
+
+# Vue Router runs in history mode, so every path has to be served index.html
+# and routed client-side. Without this, any URL entered directly is a 404 from
+# Netlify - including /callback, which Auth0 redirects to after login, so the
+# sign-in flow cannot complete. (static.json already does this for the Heroku
+# buildpack; nothing did it here.)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# The VUE_APP_AUTH0_* and VUE_APP_API_BASE_URL values are inlined at build time,
+# so they must be set as Netlify environment variables on the site - not here,
+# where they would be per-branch and committed. See README > Configuration.
