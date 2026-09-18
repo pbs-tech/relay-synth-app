@@ -9,8 +9,8 @@
                     <v-row justify="center" align="center">
                         <h2  class="pa-1 title"> Example Sound</h2>
                         <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-btn icon v-on="on">
+                            <template v-slot:activator="{ props }">
+                                <v-btn icon v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
@@ -23,8 +23,8 @@
                     <v-row justify="center" align="center">
                         <h2 class="pa-1 title dark--text"> Your Sound </h2>
                         <v-tooltip top>
-                            <template v-slot:activator="{ on }">
-                                <v-btn icon v-on="on">
+                            <template v-slot:activator="{ props }">
+                                <v-btn icon v-bind="props">
                                     <v-icon color="secondary">mdi-help-circle</v-icon>
                                 </v-btn>
                             </template>
@@ -54,7 +54,7 @@
 <script>
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
-import Tone from "tone";
+import * as Tone from "tone";
 import axios from "axios";
 import Nexus from "nexusui";
 import TutorialText from "@/components/tutorial/single/TutorialText";
@@ -114,11 +114,11 @@ export default {
     },
     created() {
         this.tutorialId = this.$route.params.id;
-        Nexus.colors.accent = this.$vuetify.theme.themes.light.primary; 
+        Nexus.colors.accent = this.$vuetify.theme.current.value.colors.primary; 
         Nexus.context = Tone.context;
    
     },
-    destroyed() {
+    unmounted() {
         this.resetTutorial();
     }
 }

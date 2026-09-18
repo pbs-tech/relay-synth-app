@@ -21,8 +21,8 @@
             <v-row align="center" justify="center">
             <h3 class="title  dark--text pa-5"> User Volume </h3> 
              <v-tooltip top v-model="show">
-                <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on">
+                <template v-slot:activator="{ props }">
+                    <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
@@ -35,7 +35,7 @@
 </template>
 <script>
 import Nexus from "nexusui";
-import Tone from "tone";
+import * as Tone from "tone";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
 import { useExampleStore } from '@/stores/useExampleStore'
@@ -107,7 +107,7 @@ export default {
             this.playButton = this.toggleExample(this.userSynth, this.playButton, this.example);
         }
     },     
-    destroyed() {
+    unmounted() {
         Tone.Transport.cancel();
         Tone.Transport.stop();
         this.userSynth.dispose();

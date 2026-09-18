@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import Login from '@/views/Login.vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useUserStore } from '@/stores/useUserStore'
@@ -28,7 +28,8 @@ describe('Login.vue', function() {
 		page = shallowMount(Login, {
             global: {
                 plugins: [createMockPinia()],
-                stubs: ['router-link', 'router-view'],
+                components: { 'router-link': RouterLinkStub },
+                stubs: ['router-view'],
                 mocks: {
                     $router: {
                         push: () => {},

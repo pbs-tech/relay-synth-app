@@ -40,9 +40,7 @@
                 </v-list-item>
                 <v-list-item> <v-divider/> </v-list-item>
                 <v-list-item @click="drawer=!drawer" v-for="link in links" :key="link.text" router :to="link.route">
-                    <v-list-item-content>
-                        <v-list-item-title class="headline background--text"> {{ link.text }} </v-list-item-title>
-                    </v-list-item-content>
+                    <v-list-item-title class="headline background--text"> {{ link.text }} </v-list-item-title>
                 </v-list-item>
             </v-list>
         </v-navigation-drawer>
@@ -53,7 +51,7 @@ import { useUserStore } from '@/stores/useUserStore'
 import { useTutorialsStore } from '@/stores/useTutorialsStore'
     
 export default {
-    name: 'Nav',
+    name: 'SiteNav',
     setup() {
         const userStore = useUserStore()
         const tutorialsStore = useTutorialsStore()

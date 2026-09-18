@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import Tone from 'tone'
+import * as Tone from 'tone'
 import synthTypes from '../util/SynthTypes'
 
 export const useSynthsStore = defineStore('synths', {
@@ -81,12 +81,12 @@ export const useSynthsStore = defineStore('synths', {
     },
 
     setUserSynth() {
-      this.userSynth = new Tone.PolySynth(1, Tone.MonoSynth).toMaster()
+      this.userSynth = new Tone.PolySynth(Tone.MonoSynth).toDestination()
       this.userSynth.volume.value = this.DEFAULT_VOLUME
     },
 
     setTutorialSynth(tutorialSynthData) {
-      this.tutorialSynth = new Tone.PolySynth(1, Tone.MonoSynth, tutorialSynthData.parameters).toMaster()
+      this.tutorialSynth = new Tone.PolySynth(Tone.MonoSynth, tutorialSynthData.parameters).toDestination()
       this.tutorialSynth.volume.value = this.DEFAULT_VOLUME
     },
 

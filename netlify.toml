@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Pin the toolchain so deploys don't drift with Netlify's default image.
+  NODE_VERSION = "22"
+
+  # @cypress/code-coverage pulls cypress in as a peer dependency, so `npm ci`
+  # would otherwise download the ~300MB Cypress binary on every deploy. The
+  # site build never runs Cypress, so skip it.
+  CYPRESS_INSTALL_BINARY = "0"

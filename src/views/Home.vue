@@ -5,7 +5,7 @@
 				<v-row no-gutters>
 					<v-col fixed>
 						<v-img id="home-image" aspect-ratio= "1" min-width="360" class="align-center" src='../assets/img/home.jpg'>
-						<v-flex id="home-image-overlay" class="primary background--text display-3 text-center py-3">Relay Synth</v-flex></v-img>
+						<div id="home-image-overlay" class="primary background--text display-3 text-center py-3">Relay Synth</div></v-img>
 					</v-col>
 					<v-col>
 						<v-row>

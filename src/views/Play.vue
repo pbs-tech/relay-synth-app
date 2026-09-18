@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import Tone from "tone";
+import * as Tone from "tone";
 import Nexus from "nexusui";
 import UserSynth from "@/components/synth/UserSynth";
 import Oscillator from "@/components/synth/Oscillator";
@@ -42,7 +42,7 @@ export default {
         FilterEnvelope
     },
     created() {
-        Nexus.colors.accent = this.$vuetify.theme.themes.light.primary;    
+        Nexus.colors.accent = this.$vuetify.theme.current.value.colors.primary;    
     }
 }
 </script>

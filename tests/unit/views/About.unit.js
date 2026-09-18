@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import About from '@/views/About.vue'
 import { createPinia } from 'pinia'
 describe('About.vue', () => {
@@ -9,7 +9,8 @@ describe('About.vue', () => {
 		page = shallowMount(About, {
             global: {
                 plugins: [createPinia()],
-                stubs: ['router-link', 'router-view']
+                components: { 'router-link': RouterLinkStub },
+                stubs: ['router-view']
             }
         });
 	})

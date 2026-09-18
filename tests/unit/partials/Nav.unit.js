@@ -1,21 +1,13 @@
 import { expect } from 'chai'
-import { shallowMount } from '@vue/test-utils'
+import { shallowMount, RouterLinkStub } from '@vue/test-utils'
 import Nav from '@/components/partials/Nav.vue'
 import { createPinia, setActivePinia } from 'pinia'
-import { useUserStore } from '@/stores/useUserStore'
 import { useTutorialsStore } from '@/stores/useTutorialsStore'
 
-// Mock localStorage
+// useUserStore seeds its state from localStorage, so the mock has to report a
+// logged-out user for the signup/login buttons (v-if="!isLoggedIn") to render.
 const localStorageMock = {
-    getItem: (key) => {
-        switch(key) {
-            case 'token': return 'mock-token'
-            case 'userEmail': return 'test@example.com'
-            case 'userScore': return '100'
-            case 'tutorialsCompleted': return JSON.stringify([1, 2, 3, 4, 5])
-            default: return null
-        }
-    },
+    getItem: () => null,
     setItem: () => {},
     removeItem: () => {}
 }
@@ -24,18 +16,12 @@ global.localStorage = localStorageMock
 const createMockPinia = () => {
     const pinia = createPinia()
     setActivePinia(pinia)
-    
-    // Mock user store
-    const userStore = useUserStore()
-    userStore.token = 'mock-token'
-    userStore.userEmail = 'test@example.com'
-    userStore.userScore = 100
-    userStore.tutorialsCompleted = [1, 2, 3, 4, 5]
-    
-    // Mock tutorials store  
+
+    // Nav calls this on mount; stub it so the suite makes no network request.
     const tutorialsStore = useTutorialsStore()
+    tutorialsStore.fetchTutorialCount = () => Promise.resolve()
     tutorialsStore.tutorialCount = { total: 10 }
-    
+
     return pinia
 }
 
@@ -46,7 +32,7 @@ describe('Nav.vue', () => {
 		component = shallowMount(Nav, {
             global: {
                 plugins: [createMockPinia()],
-                stubs: ['router-link'],
+                components: { 'router-link': RouterLinkStub },
                 mocks: {
                     $router: {
                         push: () => {}
@@ -62,5 +48,5 @@ describe('Nav.vue', () => {
         expect(component.find('#site-title').exists()).to.be.true;
     })
 
-    
+
 })

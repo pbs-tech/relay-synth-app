@@ -3,8 +3,8 @@
         <v-row justify="center" align="center"> 
             <h3 class="title pa-5"> Filter Settings </h3>
             <v-tooltip top>
-                <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on">
+                <template v-slot:activator="{ props }">
+                    <v-btn icon v-bind="props">
                         <v-icon color="secondary">mdi-help-circle</v-icon>
                     </v-btn>
                 </template>
@@ -33,11 +33,10 @@
     </v-container>
 </template>
 <script>
-import Tone from "tone";
+import * as Tone from "tone";
 import Nexus from "nexusui";
 import { computed } from 'vue'
 import { useSynthsStore } from '@/stores/useSynthsStore'
-import {mapGetters } from 'vuex';
 import EnvelopeMixin from '@/mixins/EnvelopeMixin';
 import FilterMixin from '@/mixins/FilterMixin';
 import UIMixin from '@/mixins/UIMixin';
@@ -91,7 +90,7 @@ export default {
             this.cutoffValue.link(this.cutoffSlider);
         }
     },
-    destroyed() {
+    unmounted() {
         if (this.cutoffSlider) this.cutoffSlider.destroy();
         if (this.cutoffValue) this.cutoffValue.destroy();
         if (this.selectFilterType) this.selectFilterType.destroy();

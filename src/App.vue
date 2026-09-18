@@ -1,6 +1,6 @@
 <template>
 	<v-app class="background">
-	<Nav/>
+	<SiteNav/>
 		<v-main>
 			<router-view></router-view>
 		</v-main>
@@ -9,22 +9,25 @@
 
 <script>
 
-import Nav from '@/components/partials/Nav'
+import SiteNav from '@/components/partials/Nav'
+import { useUserStore } from '@/stores/useUserStore'
 
 
 export default {
 	name: 'App',
-  	components: { Nav },
-  	created: 
+  	components: { SiteNav },
+  	created:
   	function(){
- 		this.$http.interceptors.response.use(undefined, function(err) {
-      		return new Promise(function (resolve, reject) {
-        		if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
-          			this.$store.dispatch(logout);
-        		}
-        		throw err;
-      		});
-    	});
+		// Was `this.$store.dispatch(logout)`: Vuex no longer exists and `logout`
+		// was an undefined variable, so this handler threw instead of logging
+		// the user out. Axios also reports the status on err.response.
+		const userStore = useUserStore()
+		this.$http.interceptors.response.use(undefined, function(err) {
+			if (err.response && err.response.status === 401) {
+				userStore.logout()
+			}
+			return Promise.reject(err)
+		});
 	  },
 	  watch: {
 		  $route(to, from) {

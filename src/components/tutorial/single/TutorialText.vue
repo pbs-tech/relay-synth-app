@@ -7,8 +7,8 @@
                 </h1>
                 <v-spacer/>
                 <v-tooltip top>
-                    <template v-slot:activator="{ on }">
-                        <v-btn  large icon v-on="on">
+                    <template v-slot:activator="{ props }">
+                        <v-btn  large icon v-bind="props">
                             <v-icon color="secondary">mdi-help-circle</v-icon>
                         </v-btn>
                     </template>
