@@ -18,19 +18,17 @@ export default {
                         let bp2 = envelope.points[1];
                         let bp3 = {x: 0.5 + (bp2.x / 2) , y: bp2.y }
                         let bp4 = {x: 0.5 + (bp1.x / 2) , y: bp1.y }
-                        if (synth.get().filter.type === 'highpass') {
-                            if(bp1.y < bp2.y && bp3.y < bp4.y) {
-                                envelope.setPoints([bp2,bp1,bp4,bp3])
-                            } else {
-                                envelope.setPoints([bp2,bp1,bp4,bp3])
-                            }
-                        }
-                        if (synth.get().filter.type === 'lowpass') {
-                            if(bp2.y > bp2.y && bp3.y > bp4.y) {
-                                envelope.setPoints([bp2,bp1,bp4,bp3])
-                            } else {
-                                envelope.setPoints([bp2,bp1,bp4,bp3]) 
-                            }
+                        // Both inner branches set the same four points, and so
+                        // did the highpass and lowpass blocks, so the guards
+                        // never changed the outcome - one of them could not
+                        // even be true, comparing bp2.y against itself. What
+                        // ordering the author meant to pick in the other case
+                        // is not recoverable from the code, so this keeps the
+                        // behaviour exactly as it shipped rather than guessing
+                        // at a curve nobody can verify.
+                        const currentType = synth.get().filter.type;
+                        if (currentType === 'highpass' || currentType === 'lowpass') {
+                            envelope.setPoints([bp2, bp1, bp4, bp3])
                         }
                         filterType = "bandpass"
                         break;
