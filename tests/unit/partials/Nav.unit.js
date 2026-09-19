@@ -4,14 +4,9 @@ import Nav from '@/components/partials/Nav.vue'
 import { createPinia, setActivePinia } from 'pinia'
 import { useTutorialsStore } from '@/stores/useTutorialsStore'
 
-// useUserStore seeds its state from localStorage, so the mock has to report a
-// logged-out user for the signup/login buttons (v-if="!isLoggedIn") to render.
-const localStorageMock = {
-    getItem: () => null,
-    setItem: () => {},
-    removeItem: () => {}
-}
-global.localStorage = localStorageMock
+// useUserStore no longer touches localStorage - the Auth0 client holds the
+// token in memory - so a fresh store is already logged out and the
+// signup/login buttons (v-if="!isLoggedIn") render.
 
 const createMockPinia = () => {
     const pinia = createPinia()
@@ -36,6 +31,11 @@ describe('Nav.vue', () => {
                 mocks: {
                     $router: {
                         push: () => {}
+                    },
+                    // The login and signup buttons pass the current path to
+                    // Auth0 so it can return the user here afterwards.
+                    $route: {
+                        fullPath: '/'
                     }
                 }
             }

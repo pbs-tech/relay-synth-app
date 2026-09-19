@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import http from '@/api/http'
 
 export const useLeaderboardStore = defineStore('leaderboard', {
   state: () => ({
@@ -12,7 +12,7 @@ export const useLeaderboardStore = defineStore('leaderboard', {
 
   actions: {
     async fetchScores() {
-      const response = await axios.get('https://api.relay-synth.tech/leaderboard')
+      const response = await http.get('/leaderboard')
       this.userScores = response.data.users
       this.setRanks()
     },

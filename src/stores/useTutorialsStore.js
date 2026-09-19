@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import http from '@/api/http'
 
 export const useTutorialsStore = defineStore('tutorials', {
   state: () => ({
@@ -14,12 +14,12 @@ export const useTutorialsStore = defineStore('tutorials', {
 
   actions: {
     async fetchTitles() {
-      const response = await axios.get('https://api.relay-synth.tech/tutorials/titles')
+      const response = await http.get('/tutorials/titles')
       this.tutorialTitles = response.data
     },
 
     async fetchTutorialCount() {
-      const response = await axios.get('https://api.relay-synth.tech/tutorials/count')
+      const response = await http.get('/tutorials/count')
       this.tutorialCount = response.data
     },
 

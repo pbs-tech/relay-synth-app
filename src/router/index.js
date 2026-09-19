@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/useUserStore'
+import { isAuth0Configured } from '../auth/config'
 
 const routes = [
     {
@@ -11,19 +12,13 @@ const routes = [
 		}
     },
     {
-		path: '/login',
-		name: 'Login',
-		component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue'),
+		// Where Auth0 returns the browser after Universal Login. Must match the
+		// application's Allowed Callback URLs.
+		path: '/callback',
+		name: 'Callback',
+		component: () => import(/* webpackChunkName: "callback" */ '../views/Callback.vue'),
 		meta: {
-			title: 'Login'
-		}
-	},
-    {
-		path: '/signup',
-		name: 'Signup',
-		component: () => import(/* webpackChunkName: "signup" */'../views/Signup.vue'),
-		meta: {
-			title: 'Signup'
+			title: 'Signing in'
 		}
 	},
     {
@@ -71,6 +66,16 @@ const routes = [
 		},
     },
     {
+		// The view existed but was never routed, so nothing could reach it.
+		// The guard sends here when Auth0 is not configured.
+		path: '/401',
+		name: '401',
+		component: () => import(/* webpackChunkName: "401" */ '../views/error/401.vue'),
+		meta: {
+			title: 'Unauthorised'
+		}
+	},
+    {
 		path: '/:pathMatch(.*)*',
 		name: '404',
 		component: () => import(/* webpackChunkName: "404" */ '../views/error/404.vue'),
@@ -85,17 +90,39 @@ const routes = [
     routes,
   })
 
-  router.beforeEach((to, from, next) =>  {
-    if (to.matched.some(record => record.meta.requiresAuth)) {
-      const userStore = useUserStore()
-      if (userStore.isLoggedIn) {
-        next();
-        return;
-      }
-      next('/login');
-    } else {
-      next();
+  // The guard is async because the Auth0 client restores the session
+  // asynchronously. The old synchronous check read a token that had already
+  // been rehydrated from localStorage; there is no such token now, so a guarded
+  // route loaded cold would always have bounced to login before the SDK
+  // answered. `restoreSession` memoises its work, so this costs one await.
+  router.beforeEach(async (to) => {
+    // The callback route is what establishes the session, so it cannot require
+    // one - guarding it would loop.
+    if (to.name === 'Callback') {
+      return true
     }
+
+    if (!to.matched.some(record => record.meta.requiresAuth)) {
+      return true
+    }
+
+    const userStore = useUserStore()
+    await userStore.restoreSession()
+
+    if (userStore.isLoggedIn) {
+      return true
+    }
+
+    if (!isAuth0Configured()) {
+      // No tenant configured: send them somewhere that explains, rather than
+      // to a login that cannot work.
+      return { name: '401' }
+    }
+
+    // Universal Login is a full page redirect, so cancel this navigation and
+    // let the browser leave. `targetPath` brings them back here afterwards.
+    await userStore.loginWithRedirect(to.fullPath)
+    return false
 })
 
 export default router

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import http from '@/api/http'
 
 export const useExampleStore = defineStore('example', {
   state: () => ({
@@ -12,7 +12,7 @@ export const useExampleStore = defineStore('example', {
 
   actions: {
     async fetchExample(tutorialId) {
-      const response = await axios.get('https://api.relay-synth.tech/tutorials/' + tutorialId + '/example')
+      const response = await http.get('/tutorials/' + tutorialId + '/example')
       this.example = response.data.example
     }
   }

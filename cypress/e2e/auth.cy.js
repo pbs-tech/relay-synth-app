@@ -1,51 +1,57 @@
+/**
+ * Auth0 bearer-token access.
+ *
+ * Replaces the old JWT spec, which logged in through POST /login and sent the
+ * token in an `auth-token` header. Both are gone: Auth0 mints the token and the
+ * API expects `Authorization: Bearer`.
+ */
+
 // The API host is configurable so this spec can run against a local backend;
 // it defaults to the same host the app itself calls.
-const apiUrl = () => Cypress.env('apiUrl') || 'https://api.relay-synth.tech';
+const apiUrl = () => Cypress.env('apiUrl') || 'https://api.relay-synth.peebles.lol';
 
-describe('JWT', () => {
-    let user;
+describe('Auth0 access tokens', () => {
     let token;
 
-    before(function fetchUser() {
-        cy.request('POST', `${apiUrl()}/login`, {
-            email: Cypress.env('userEmail'),
-            password: Cypress.env('userPassword')
-        }).its('body').then((res) => {
-            user = res.user;
-            token = res.token;
+    before(function fetchToken() {
+        cy.auth0Token().then((accessToken) => {
+            token = accessToken;
         })
     })
 
-    beforeEach(function setUser() {
-        cy.visit('/', {
-            onBeforeLoad(win) {
-                win.localStorage.setItem('user', JSON.stringify(user));
-                win.localStorage.setItem('auth-token', token);
-            }
-        })
-    })
-
-    it('makes authenticated request', function() {
+    it('makes an authenticated request with a bearer token', function() {
         cy.request({
             method: 'GET',
             url: `${apiUrl()}/user/profile`,
-            body: { email: user.email },
-            headers: { 'auth-token': token }
+            headers: { Authorization: `Bearer ${token}` }
         })
         .its('body')
         .should('include', { email: Cypress.env('userEmail') })
     })
 
-    it('Allows user onto routes requiring authentication', function() {
-        // Previously reached into Pinia internals via pinia._s.get('user');
-        // main.js now exposes the store directly under window.userStore.
-        cy.window().its('userStore').then((userStore) =>
-            userStore.login({
-                email: Cypress.env('userEmail'),
-                password: Cypress.env('userPassword')
-            })
-        )
-        cy.window().its('userStore').its('isLoggedIn').should('eq', true);
+    it('rejects a request with no token', function() {
+        cy.request({
+            method: 'GET',
+            url: `${apiUrl()}/user/profile`,
+            failOnStatusCode: false
+        })
+        .its('status')
+        .should('eq', 401)
+    })
+
+    it('allows a signed-in user onto routes requiring authentication', function() {
+        cy.loginByAuth0();
         cy.visit('/tutorials');
+        cy.contains('Tutorials');
+    })
+
+    it('keeps a signed-out user off routes requiring authentication', function() {
+        // Universal Login lives on the Auth0 domain, so the guard's redirect
+        // takes the browser off-origin. Asserting the origin changed is all
+        // this can check without testing Auth0 itself.
+        cy.visit('/leaderboard');
+        cy.origin(`https://${Cypress.env('auth0Domain')}`, () => {
+            cy.url().should('include', '/authorize');
+        })
     })
 })

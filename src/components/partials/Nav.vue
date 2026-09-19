@@ -7,16 +7,12 @@
                 </v-toolbar-title>
         <v-spacer></v-spacer>
         <div id="nav-buttons" v-if="!isLoggedIn">
-            <router-link to="/signup">
-                <v-btn id="signup-button" color="primary">
-                    <span> Signup </span>
-                </v-btn>
-            </router-link>
-            <router-link to="/login">
-                <v-btn id="login-button" color="primary">
-                    <span> Login </span>
-                </v-btn>
-            </router-link>
+            <v-btn id="signup-button" color="primary" @click="signupUser">
+                <span> Signup </span>
+            </v-btn>
+            <v-btn id="login-button" color="primary" @click="loginUser">
+                <span> Login </span>
+            </v-btn>
         </div> 
         <div class="logout" v-if="isLoggedIn">
             <v-btn id="logout-button" color="primary" @click="logoutUser">
@@ -33,7 +29,7 @@
                 </v-list-item>
                 <v-list-item v-if="isLoggedIn" class="d-flex justify-center">
                     <v-sheet class="bg-primary text-background text-subtitle-1">
-                        <span> {{ userEmail }} </span><br/>
+                        <span> {{ displayName || userEmail }} </span><br/>
                         <span> Score: {{ userScore }} </span><br/>
                         <span> Completed: {{ tutorialsCompletedCount }} / {{tutorialCount.total}} </span>
                     </v-sheet>
@@ -61,6 +57,9 @@ export default {
         isLoggedIn() {
             return this.userStore.isLoggedIn
         },
+        displayName() {
+            return this.userStore.displayName
+        },
         tutorialCount() {
             return this.tutorialsStore.tutorialCount
         },
@@ -87,14 +86,40 @@ export default {
             ]
         }
     },
-    mounted() {
-        this.tutorialsStore.fetchTutorialCount()
+    // No `mounted` fetch: the `immediate` watcher below already covers the
+    // already-logged-in case, and having both would fetch the count twice.
+    watch: {
+        // GET /tutorials/count now requires a bearer token - every route but the
+        // health check does. Fetching it unconditionally on mount would 401 for
+        // every logged-out visitor, so it waits until there is a session. The
+        // count is only rendered inside the logged-in block anyway.
+        isLoggedIn: {
+            immediate: true,
+            handler(loggedIn) {
+                if (loggedIn) {
+                    this.loadTutorialCount()
+                }
+            }
+        }
     },
     methods: {
+        loadTutorialCount() {
+            if (!this.isLoggedIn) {
+                return
+            }
+            return this.tutorialsStore.fetchTutorialCount()
+        },
+        loginUser() {
+            return this.userStore.loginWithRedirect(this.$route.fullPath)
+        },
+        signupUser() {
+            return this.userStore.signupWithRedirect(this.$route.fullPath)
+        },
         logoutUser() {
-            this.userStore.logout().then(() => {
-                this.$router.push('/')
-            })
+            // Auth0 logout is a full page redirect, so there is no route push
+            // to make afterwards - the browser leaves for the tenant and comes
+            // back to the site root.
+            return this.userStore.logout()
         },
     },
 }

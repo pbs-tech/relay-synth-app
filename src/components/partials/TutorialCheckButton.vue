@@ -33,12 +33,13 @@ export default {
             return synthsStore.checkAnswer()
         }
 
-        const updateScore = (score) => {
-            return userStore.updateScore(score)
-        }
-
-        const updateTutorialsCompleted = (tutorialId) => {
-            return userStore.updateTutorialsCompleted(tutorialId)
+        // One call replaces the old updateScore + updateTutorialsCompleted
+        // pair. The server reads the point value from the tutorial record and
+        // takes the player from the token, so the client no longer says who it
+        // is or how much it should be awarded. It is also atomic, so the double
+        // click this button invites cannot double-award.
+        const completeTutorial = (tutorialId) => {
+            return userStore.completeTutorial(tutorialId)
         }
 
         const isTutorialComplete = (tutorialId) => {
@@ -48,8 +49,7 @@ export default {
         const onCheckAnswerClicked = () => {
             checkAnswer()
             if(matching.value === true && tutorialComplete.value === false) {
-                updateScore(pointsAvailable.value)
-                updateTutorialsCompleted(props.tutorialId)
+                completeTutorial(props.tutorialId)
             }
         }
 
@@ -60,8 +60,7 @@ export default {
             tutorialComplete,
             matching,
             checkAnswer,
-            updateScore,
-            updateTutorialsCompleted,
+            completeTutorial,
             isTutorialComplete,
             onCheckAnswerClicked
         }
