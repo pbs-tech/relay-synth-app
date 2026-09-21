@@ -81,6 +81,33 @@ exchange credentials for a token directly, which needs the **Password grant**
 enabled on the application and a **Default Directory** set on the tenant. Copy
 `cypress.env.example.json` to `cypress.env.json` (gitignored) and fill it in.
 
+## Deploying
+
+Netlify builds `master` on push through its own git integration; that is the
+normal path and nothing in this repo drives it.
+
+The **Deploy** workflow (`.github/workflows/deploy.yml`) covers the redeploys
+that have no commit behind them - a changed site environment variable (they are
+inlined at build time, so only a rebuild picks one up), a rebuild after the
+API's Terraform outputs move, or retrying a build that failed on Netlify's
+side. Run it from Actions > Deploy > Run workflow, on `master`; it refuses any
+other branch, because a build hook builds the branch it is configured for and
+would otherwise deploy `master` under a feature branch's name.
+
+It triggers a Netlify build rather than building here, so the result is the
+same deploy a push would have produced - same image, same `NODE_VERSION` pin
+from `netlify.toml`, same site environment variables.
+
+| Secret | Required | Meaning |
+| --- | --- | --- |
+| `NETLIFY_BUILD_HOOK` | yes | Build hook URL. Netlify > Site configuration > Build & deploy > Build hooks |
+| `NETLIFY_AUTH_TOKEN` | no | Personal access token. Without it the workflow triggers the build but cannot report whether it succeeded |
+| `NETLIFY_SITE_ID` | no | Site API ID, as above. Both are needed to track the deploy |
+
+With the two optional secrets set the job polls the deploy and fails when the
+build fails. Without them a green run means only that Netlify accepted the
+request, and the job says so.
+
 ## Project setup
 ```
 npm install
