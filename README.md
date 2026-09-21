@@ -25,9 +25,44 @@ cp .env.example .env.local
 | `VUE_APP_AUTH0_REDIRECT_URI` | no | Defaults to `<origin>/callback` |
 | `VUE_APP_AUTH0_LOGOUT_URI` | no | Defaults to `<origin>` |
 
-These are inlined by vue-cli at build time, not read at runtime: a change needs a
-rebuild, and each environment needs its own build. On Netlify set them as site
-environment variables.
+For local development that is all you need: `npm run serve` reads `.env.local`
+and vue-cli inlines the values into the dev bundle.
+
+### Runtime configuration
+
+vue-cli inlines `VUE_APP_*` at build time, which used to mean the bundle *was*
+the configuration: dev and prod needed separate builds, so the artifact you
+tested was never the artifact you shipped.
+
+A build now also writes `dist/config.json` (`scripts/write-runtime-config.js`),
+which the app fetches before it mounts. The keys are the variable names without
+the `VUE_APP_` prefix:
+
+```json
+{
+    "AUTH0_DOMAIN": "relay-synth.eu.auth0.com",
+    "AUTH0_CLIENT_ID": "...",
+    "API_BASE_URL": "https://api.relay-synth.peebles.lol"
+}
+```
+
+Precedence is `config.json`, then the build-time `VUE_APP_*` value, then the
+built-in default. A key that is missing or empty falls through to the next one,
+and a deploy with no `config.json` at all behaves exactly as it did before -
+which is what keeps `.env.local` working under `npm run serve`, where no file is
+generated.
+
+What this buys, concretely: one bundle can serve any environment, so the same
+artifact can be promoted between them. On Netlify the file is still generated
+during the build from the site's environment variables, so changing one there
+is still a rebuild - the Deploy workflow below is how you trigger it. On a host
+where a single object can be replaced (Cloudflare Pages, S3), changing
+configuration stops needing a build at all.
+
+The loader is in `src/config/runtime.js`. Note the ordering constraint in
+`src/main.js`: installing the router resolves the first route immediately, and
+that route's guard reads the Auth0 config, so the fetch has to be awaited before
+`app.use(router)` - not merely before `mount()`.
 
 The values all come from the API's Terraform outputs:
 
@@ -87,10 +122,10 @@ Netlify builds `master` on push through its own git integration; that is the
 normal path and nothing in this repo drives it.
 
 The **Deploy** workflow (`.github/workflows/deploy.yml`) covers the redeploys
-that have no commit behind them - a changed site environment variable (they are
-inlined at build time, so only a rebuild picks one up), a rebuild after the
-API's Terraform outputs move, or retrying a build that failed on Netlify's
-side. Run it from Actions > Deploy > Run workflow, on `master`; it refuses any
+that have no commit behind them - a changed site environment variable (Netlify
+bakes these into `config.json` during the build, so only a rebuild picks one
+up), a rebuild after the API's Terraform outputs move, or retrying a build that
+failed on Netlify's side. Run it from Actions > Deploy > Run workflow, on `master`; it refuses any
 other branch, because a build hook builds the branch it is configured for and
 would otherwise deploy `master` under a feature branch's name.
 

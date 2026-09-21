@@ -1,5 +1,5 @@
 import { createAuth0Client } from '@auth0/auth0-spa-js'
-import { assertAuth0Configured, auth0Config, isAuth0Configured } from './config'
+import { assertAuth0Configured, getAuth0Config, isAuth0Configured } from './config'
 
 /**
  * The Auth0 SPA client, created once and shared.
@@ -27,12 +27,17 @@ export function getAuth0Client() {
     assertAuth0Configured()
 
     if (!clientPromise) {
+        // Read once, here: bootstrap has resolved the runtime config by the
+        // time anything asks for a client, and the SDK keeps its own copy
+        // anyway - re-reading per property would only invite them to disagree.
+        const config = getAuth0Config()
+
         clientPromise = createAuth0Client({
-            domain: auth0Config.domain,
-            clientId: auth0Config.clientId,
+            domain: config.domain,
+            clientId: config.clientId,
             authorizationParams: {
-                audience: auth0Config.audience,
-                redirect_uri: auth0Config.redirectUri,
+                audience: config.audience,
+                redirect_uri: config.redirectUri,
                 // `offline_access` is what mints the refresh token; the resource
                 // server sets allow_offline_access = true to permit it.
                 scope: 'openid profile email offline_access'

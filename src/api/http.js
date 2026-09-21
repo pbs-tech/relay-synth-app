@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { apiBaseUrl } from '@/auth/config'
+import { getApiBaseUrl } from '@/auth/config'
 import { getAccessToken } from '@/auth/auth0'
 
 /**
@@ -11,9 +11,14 @@ import { getAccessToken } from '@/auth/auth0'
  * request from the Auth0 client, so it is always the current one and a rotated
  * refresh token takes effect without a reload.
  */
-const http = axios.create({ baseURL: apiBaseUrl })
+const http = axios.create()
 
 http.interceptors.request.use(async (config) => {
+    // Resolved per request rather than at create() time: the runtime config is
+    // fetched during bootstrap, which lands after this module is imported, so
+    // a baseURL captured here would always be the build-time one.
+    config.baseURL = getApiBaseUrl()
+
     const token = await getAccessToken()
 
     if (token) {
