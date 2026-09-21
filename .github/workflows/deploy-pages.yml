@@ -13,6 +13,12 @@ name: Deploy (Cloudflare Pages)
 
 on:
   workflow_dispatch:
+    inputs:
+      config_only:
+        description: Reconfigure the last deployed build instead of building a new one
+        required: false
+        default: false
+        type: boolean
 
 # A dispatch from master publishes to production; from any other branch it
 # publishes a preview under that branch's name. Keyed by ref so a preview and a
@@ -23,6 +29,8 @@ concurrency:
 
 permissions:
   contents: read
+  # Reading a previous run's artifact, for the config-only path below.
+  actions: read
 
 env:
   NODE_VERSION: '22'
@@ -32,7 +40,7 @@ env:
 
 jobs:
   deploy:
-    name: Build and deploy to Pages
+    name: Deploy to Pages
     runs-on: ubuntu-latest
     # Attach required reviewers to this GitHub Environment to gate production.
     environment: prod
@@ -45,8 +53,13 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      # ---------------------------------------------------------------------
+      # Build path. Skipped entirely when reconfiguring an existing build.
+      # ---------------------------------------------------------------------
+
       # Cypress' postinstall downloads a browser binary this job never uses.
       - name: Install dependencies
+        if: ${{ !inputs.config_only }}
         run: npm ci
         env:
           CYPRESS_INSTALL_BINARY: '0'
@@ -54,22 +67,92 @@ jobs:
       # Deploy only what passed. The Netlify path cannot do this - its build
       # runs on Netlify, after the decision to deploy has already been made.
       - name: Lint and test
+        if: ${{ !inputs.config_only }}
         run: |
           npm run lint -- --no-fix
           npm run test:unit
 
       # Built with no VUE_APP_* in the environment on purpose: nothing about
       # any environment is inlined into these bundles, so this artifact is the
-      # one that can be promoted anywhere. Configuration is applied in the next
-      # step instead.
+      # one that can be promoted anywhere. Configuration is applied further
+      # down instead.
       - name: Build
+        if: ${{ !inputs.config_only }}
         run: npm run build
 
-      # This is the whole point of the runtime config work: the environment is
-      # written into dist/config.json after the bundles exist, so the values
-      # below can change without the bundles changing. They are public values -
-      # an Auth0 SPA client id is not a secret - so they live in repository
-      # variables rather than secrets, where they can be read and audited.
+      # ---------------------------------------------------------------------
+      # Config-only path: take the bytes that were deployed last time and give
+      # them a new config.json. This is what the runtime config work was for -
+      # changing a value is no longer a reason to produce a different bundle,
+      # so the thing that ships is still the thing that was tested.
+      # ---------------------------------------------------------------------
+
+      - name: Find the last deployed build
+        id: find
+        if: ${{ inputs.config_only }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Newest first. `status: success` excludes this run, which is
+            // still in progress, so there is no chance of finding ourselves.
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy-pages.yml',
+              branch: context.ref.replace('refs/heads/', ''),
+              status: 'success',
+              per_page: 20
+            })
+
+            for (const run of runs.data.workflow_runs) {
+              const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+                per_page: 100
+              })
+
+              // Artifacts expire on their own retention clock, well before the
+              // run that produced them disappears - so an expired one is a run
+              // to skip, not a reason to stop looking.
+              const dist = artifacts.data.artifacts.find(
+                a => a.name.startsWith('dist-') && !a.expired
+              )
+
+              if (dist) {
+                core.setOutput('run_id', String(run.id))
+                core.setOutput('sha', run.head_sha)
+                core.info(`Reusing ${dist.name} from run ${run.id} (${run.head_sha})`)
+                return
+              }
+            }
+
+            core.setFailed(
+              'No deployable artifact found on this branch. Artifacts expire, ' +
+              'so run this workflow without config_only to build one.'
+            )
+
+      - name: Fetch the last deployed build
+        if: ${{ inputs.config_only }}
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ steps.find.outputs.run_id }}
+          github-token: ${{ github.token }}
+          # The name carries the commit it was built from, which this run has
+          # no way to know in advance.
+          pattern: dist-*
+          merge-multiple: true
+          path: dist
+
+      # ---------------------------------------------------------------------
+      # Both paths converge here.
+      # ---------------------------------------------------------------------
+
+      # The environment is written into dist/config.json after the bundles
+      # exist, which is what lets the config-only path above mean anything.
+      # These are public values - an Auth0 SPA client id is not a secret - so
+      # they live in repository variables rather than secrets, where they can
+      # be read and audited.
       - name: Apply runtime configuration
         env:
           AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
@@ -78,12 +161,15 @@ jobs:
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: node scripts/write-runtime-config.js dist/config.json
 
-      # Keeps the exact bytes that were deployed, so a later configuration
-      # change can re-upload this artifact instead of rebuilding from source.
+      # Keeps the exact bytes deployed by this run, so the next config-only
+      # deploy has something to reuse. Named for the commit the bundles were
+      # built from rather than the commit this run checked out: on the
+      # config-only path those differ, and it is the former that describes what
+      # is in the file.
       - name: Keep the deployed artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ github.sha }}
+          name: dist-${{ steps.find.outputs.sha || github.sha }}-${{ github.run_id }}
           path: dist
           retention-days: 30
 
@@ -93,6 +179,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+          SOURCE_SHA: ${{ steps.find.outputs.sha || github.sha }}
         run: |
           set -euo pipefail
 
@@ -109,7 +196,7 @@ jobs:
           npx --yes "wrangler@${WRANGLER_VERSION}" pages deploy dist \
             --project-name "${PROJECT_NAME}" \
             --branch "${branch}" \
-            --commit-hash "${GITHUB_SHA}" \
+            --commit-hash "${SOURCE_SHA}" \
             --commit-message "Deployed by ${GITHUB_WORKFLOW} run ${GITHUB_RUN_ID}" \
             | tee deploy.log
 
@@ -122,13 +209,18 @@ jobs:
         if: always()
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          SOURCE_SHA: ${{ steps.find.outputs.sha || github.sha }}
+          CONFIG_ONLY: ${{ inputs.config_only }}
         run: |
           set -euo pipefail
           {
             echo "### Cloudflare Pages"
             echo ""
             echo "- Branch: \`${GITHUB_REF_NAME}\`"
-            echo "- Commit: \`${GITHUB_SHA::7}\`"
+            echo "- Built from: \`${SOURCE_SHA::7}\`"
+            if [ "${CONFIG_ONLY}" = "true" ]; then
+              echo "- Reconfigured an existing build; no rebuild"
+            fi
             if [ -n "${DEPLOY_URL}" ]; then
               echo "- Deployment: ${DEPLOY_URL}"
             fi

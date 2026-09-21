@@ -164,6 +164,7 @@ What it buys over the build hook:
   set, so nothing about dev or prod is inlined; `config.json` is written
   afterwards, in a separate step. That is the same bundle for every
   environment.
+- **Changing configuration does not rebuild.** See below.
 
 The project itself is Terraform, in `relay-synth-api` (`terraform/pages.tf`) -
 see that repo's README > Frontend hosting, which also covers the cutover.
@@ -182,15 +183,29 @@ To try it: create the project in `relay-synth-api`, set the variables above,
 then run **Deploy (Cloudflare Pages)** from Actions on `master` and open the
 `*.pages.dev` URL in the run summary.
 
+#### Changing configuration without rebuilding
+
+Run the same workflow with **config_only** ticked. It skips `npm ci`, the
+tests and the build, downloads the `dist` from the last successful deploy on
+that branch, writes a fresh `config.json` from the repository variables, and
+uploads that. The bundles are byte-for-byte the ones that were tested; only
+the configuration file differs.
+
+This is the payoff from the runtime config work: a value like `API_BASE_URL`
+can change without producing a bundle that nothing has run against. The run
+summary reports the commit the bundles were built from, which on this path is
+not the commit the workflow checked out.
+
+Every deploy keeps its `dist` as a run artifact for 30 days, which is what the
+next config-only run reuses. Past that the artifact expires and the workflow
+says so rather than silently rebuilding - run it once without `config_only` to
+produce a fresh one.
+
 **Known gaps, deliberately left for after the spike:**
 
 - Auth0 login will not work on a `*.pages.dev` preview until those origins are
   added to the SPA client's allowed callback and logout URLs (`frontend_urls`
   in the API's tfvars). Production on the real domain is unaffected.
-- Changing configuration without rebuilding is set up but not wired. The
-  workflow keeps each deployed `dist` as a run artifact, which is what a
-  config-only job would re-upload; that job does not exist yet, so today a
-  configuration change still goes through a build.
 - The workflow is `workflow_dispatch` only. Deploying on push to `master`
   belongs with the cutover, not before it, or two hosts would be publishing the
   same commit.
