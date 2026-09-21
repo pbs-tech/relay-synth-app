@@ -1,0 +1,135 @@
+# Cloudflare Pages deploy - the spike alongside the Netlify build hook, not yet
+# a replacement for it. Nothing here touches the live site until the apex DNS
+# record moves; until then this publishes to the Pages project's own
+# *.pages.dev hostname and Netlify keeps serving relay-synth.peebles.lol.
+#
+# The difference from deploy.yml is what a deploy *is*. Netlify's build hook is
+# a poke: it takes no artifact, returns no identity, and the workflow has to go
+# looking for what it started. Here the build happens on the runner, the upload
+# is the deploy, and it comes back with a deployment id and URL. Previews,
+# rollback to any earlier deployment, and promoting a tested artifact all
+# follow from that.
+name: Deploy (Cloudflare Pages)
+
+on:
+  workflow_dispatch:
+
+# A dispatch from master publishes to production; from any other branch it
+# publishes a preview under that branch's name. Keyed by ref so a preview and a
+# production deploy do not queue behind each other.
+concurrency:
+  group: deploy-pages-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  # Pinned deliberately: an unpinned wrangler would change what "deploy" means
+  # between two runs of the same commit.
+  WRANGLER_VERSION: '4.36.1'
+
+jobs:
+  deploy:
+    name: Build and deploy to Pages
+    runs-on: ubuntu-latest
+    # Attach required reviewers to this GitHub Environment to gate production.
+    environment: prod
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Cypress' postinstall downloads a browser binary this job never uses.
+      - name: Install dependencies
+        run: npm ci
+        env:
+          CYPRESS_INSTALL_BINARY: '0'
+
+      # Deploy only what passed. The Netlify path cannot do this - its build
+      # runs on Netlify, after the decision to deploy has already been made.
+      - name: Lint and test
+        run: |
+          npm run lint -- --no-fix
+          npm run test:unit
+
+      # Built with no VUE_APP_* in the environment on purpose: nothing about
+      # any environment is inlined into these bundles, so this artifact is the
+      # one that can be promoted anywhere. Configuration is applied in the next
+      # step instead.
+      - name: Build
+        run: npm run build
+
+      # This is the whole point of the runtime config work: the environment is
+      # written into dist/config.json after the bundles exist, so the values
+      # below can change without the bundles changing. They are public values -
+      # an Auth0 SPA client id is not a secret - so they live in repository
+      # variables rather than secrets, where they can be read and audited.
+      - name: Apply runtime configuration
+        env:
+          AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ vars.AUTH0_CLIENT_ID }}
+          AUTH0_AUDIENCE: ${{ vars.AUTH0_AUDIENCE }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: node scripts/write-runtime-config.js dist/config.json
+
+      # Keeps the exact bytes that were deployed, so a later configuration
+      # change can re-upload this artifact instead of rebuilding from source.
+      - name: Keep the deployed artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ github.sha }}
+          path: dist
+          retention-days: 30
+
+      - name: Deploy
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT_NAME: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PROJECT_NAME}" ]; then
+            echo "::error::CLOUDFLARE_PAGES_PROJECT is not set. Create the Pages project first - see README > Cloudflare Pages."
+            exit 1
+          fi
+
+          # Pages calls the production branch by name, so this has to be the
+          # branch the project was created with for a dispatch from master to
+          # publish to production rather than to a preview.
+          branch="${GITHUB_REF_NAME}"
+
+          npx --yes "wrangler@${WRANGLER_VERSION}" pages deploy dist \
+            --project-name "${PROJECT_NAME}" \
+            --branch "${branch}" \
+            --commit-hash "${GITHUB_SHA}" \
+            --commit-message "Deployed by ${GITHUB_WORKFLOW} run ${GITHUB_RUN_ID}" \
+            | tee deploy.log
+
+          # wrangler prints the deployment URL on success; losing it to the log
+          # would mean the summary could not say where this went.
+          url=$(grep -oE 'https://[a-z0-9.-]+\.pages\.dev' deploy.log | tail -1 || true)
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: always()
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Cloudflare Pages"
+            echo ""
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Commit: \`${GITHUB_SHA::7}\`"
+            if [ -n "${DEPLOY_URL}" ]; then
+              echo "- Deployment: ${DEPLOY_URL}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

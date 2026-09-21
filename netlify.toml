@@ -11,30 +11,19 @@
   # site build never runs Cypress, so skip it.
   CYPRESS_INSTALL_BINARY = "0"
 
-# config.json is fetched at boot and is the whole reason a configuration
-# change no longer needs a rebuild, so it must not be served from cache. The
-# hashed bundles around it keep their default immutable caching.
-[[headers]]
-  for = "/config.json"
-  [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-# Vue Router runs in history mode, so every path has to be served index.html
-# and routed client-side. Without this, any URL entered directly is a 404 from
-# Netlify - including /callback, which Auth0 redirects to after login, so the
-# sign-in flow cannot complete. (static.json already does this for the Heroku
-# buildpack; nothing did it here.)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# The SPA rewrite and the config.json cache header are in public/_redirects and
+# public/_headers rather than here. Netlify and Cloudflare Pages both read those
+# files from the published directory, so the rules do not have to be restated
+# per host - and rules in this file would take precedence over them, which is
+# exactly the divergence worth avoiding while the site has two possible homes.
+# (static.json covers the same rewrite for the Heroku buildpack.)
 
 # The build reads VUE_APP_AUTH0_* and VUE_APP_API_BASE_URL from the site's
 # Netlify environment variables and writes them to dist/config.json, which the
 # app fetches at boot. They are still set on the site, not here, where they
 # would be per-branch and committed. See README > Configuration.
 #
-# Note that the catch-all rewrite above does not shadow /config.json: Netlify
-# serves a file that exists in preference to a non-forced redirect. If the file
-# is ever missing the rewrite answers with index.html, which the loader treats
-# as "no config" and falls back to the build-time values.
+# Note that the catch-all rewrite does not shadow /config.json: Netlify serves a
+# file that exists in preference to a non-forced redirect. If the file is ever
+# missing the rewrite answers with index.html, which the loader treats as "no
+# config" and falls back to the build-time values.

@@ -143,6 +143,63 @@ With the two optional secrets set the job polls the deploy and fails when the
 build fails. Without them a green run means only that Netlify accepted the
 request, and the job says so.
 
+### Cloudflare Pages (spike)
+
+`.github/workflows/deploy-pages.yml` is a second, parallel deploy path. It
+changes nothing about the live site: it publishes to a Cloudflare Pages project
+that answers on its own `*.pages.dev` hostname, while Netlify keeps serving
+`relay-synth.peebles.lol` until the apex DNS record is moved.
+
+What it buys over the build hook:
+
+- **The build happens before the decision to deploy.** Lint and unit tests run
+  on the runner, against the artifact being uploaded. Netlify builds after the
+  hook has already been fired, so a failing build is something you find out
+  about afterwards.
+- **A deploy has an identity.** Wrangler returns a deployment and its URL,
+  rather than a 200 meaning "request accepted".
+- **Rollback is picking an earlier deployment**, not rebuilding an older commit.
+- **Previews per branch** come from dispatching the workflow on that branch.
+- **The artifact carries no environment.** The build runs with no `VUE_APP_*`
+  set, so nothing about dev or prod is inlined; `config.json` is written
+  afterwards, in a separate step. That is the same bundle for every
+  environment.
+
+The project itself is Terraform, in `relay-synth-api` (`terraform/pages.tf`) -
+see that repo's README > Frontend hosting, which also covers the cutover.
+
+Configuration lives in repository **variables**, not secrets: an Auth0 SPA
+client id and an API URL are public, and variables can be read and audited.
+
+| Setting | Kind | Meaning |
+| --- | --- | --- |
+| `CLOUDFLARE_PAGES_PROJECT` | variable | Pages project name, from `terraform output pages_project_name` |
+| `CLOUDFLARE_ACCOUNT_ID` | variable | Account that owns the project |
+| `CLOUDFLARE_API_TOKEN` | secret | Needs Account > Cloudflare Pages: Edit |
+| `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_AUDIENCE`, `API_BASE_URL` | variables | Written into `config.json` after the build |
+
+To try it: create the project in `relay-synth-api`, set the variables above,
+then run **Deploy (Cloudflare Pages)** from Actions on `master` and open the
+`*.pages.dev` URL in the run summary.
+
+**Known gaps, deliberately left for after the spike:**
+
+- Auth0 login will not work on a `*.pages.dev` preview until those origins are
+  added to the SPA client's allowed callback and logout URLs (`frontend_urls`
+  in the API's tfvars). Production on the real domain is unaffected.
+- Changing configuration without rebuilding is set up but not wired. The
+  workflow keeps each deployed `dist` as a run artifact, which is what a
+  config-only job would re-upload; that job does not exist yet, so today a
+  configuration change still goes through a build.
+- The workflow is `workflow_dispatch` only. Deploying on push to `master`
+  belongs with the cutover, not before it, or two hosts would be publishing the
+  same commit.
+
+`public/_redirects` and `public/_headers` hold the SPA rewrite and the
+`config.json` cache header. Both Netlify and Pages read those files from the
+published directory, so the rules are not restated per host - which is what
+makes the cutover a DNS change rather than a config rewrite.
+
 ## Project setup
 ```
 npm install
