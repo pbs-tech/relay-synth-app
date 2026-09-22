@@ -96,6 +96,7 @@ export default {
             this.setUserSynth();
             this.setOscListener(this.userSynth, this.oscilloscope);
             this.setClickListener(this.userSynth, this.piano);
+            this.setPointerListener(this.piano);
             this.setVolumeChangeListener(this.userSynth, this.volumeSlider);
             this.setKeysDown(this.userSynth, this.piano);
             this.setKeysUp(this.userSynth, this.piano);
@@ -121,6 +122,7 @@ export default {
         // Disposing the synth here is also wrong: the store owns it, and by the
         // time this runs the next route component has already replaced it.
         this.teardownKeyboard();
+        this.teardownPointerListener();
         this.teardownClickListener();
         if (this.releaseHeldNotes) {
             this.releaseHeldNotes();
