@@ -20,8 +20,18 @@ export default {
         // leaked voices until the 32 voice limit silenced the synth.
         setKeysDown(synth, piano) {
             this.keyDownHandler = (e) => {
+                // Ctrl+R, Cmd+S and the rest keep their meaning: a note is a
+                // bare keypress, so anything with a modifier is not ours.
+                if (e.ctrlKey || e.metaKey || e.altKey) return
                 let key = String.fromCharCode(e.keyCode)
                 if (this.keyMap.has(key) && !this.inputMap.has(key)) {
+                    // Without this the browser keeps its own meaning for the
+                    // key as well as playing the note. Firefox's find-as-you-
+                    // type is the one that bites: a bare letter opens the find
+                    // bar, which takes focus, and every keystroke after it goes
+                    // there instead of to the page - so the piano answers the
+                    // first key and then goes dead.
+                    e.preventDefault()
                     let noteValue = this.keyMap.get(key)
                     this.inputMap.set(key, noteValue);
                     piano.toggleKey(noteValue, true);
@@ -33,6 +43,7 @@ export default {
             this.keyUpHandler = (e) => {
                 let key = String.fromCharCode(e.keyCode)
                 if (this.inputMap.has(key)) {
+                    e.preventDefault()
                     let noteValue = this.keyMap.get(key)
                     this.inputMap.delete(key);
                     piano.toggleKey(noteValue, false);

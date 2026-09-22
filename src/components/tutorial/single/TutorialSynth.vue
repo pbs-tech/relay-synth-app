@@ -88,6 +88,7 @@ export default {
             this.fetchTutorialSynthData(this.tutorialId).then(() => {
                 this.setOscListener(this.tutorialSynth, this.oscilloscope);
                 this.setClickListener(this.tutorialSynth, this.piano);
+                this.setPointerListener(this.piano);
                 this.setVolumeChangeListener(this.tutorialSynth, this.volumeSlider);
             })
     
@@ -108,6 +109,7 @@ export default {
     unmounted() {
         // See UserSynth: volumeNumber is never assigned, and destroying it threw
         // before the piano was ever torn down.
+        this.teardownPointerListener();
         this.teardownClickListener();
         if (this.releaseHeldNotes) {
             this.releaseHeldNotes();
