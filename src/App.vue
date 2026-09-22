@@ -4,6 +4,25 @@
 		<v-main>
 			<router-view></router-view>
 		</v-main>
+		<!--
+			Browsers that block autoplay outright - the privacy-hardened Firefox
+			forks do by default - refuse to resume the AudioContext on a gesture
+			alone and need a per-site permission. Nothing used to say so, which
+			made a correctly working synth look broken.
+		-->
+		<v-snackbar
+			v-model="audioBlocked"
+			:timeout="-1"
+			color="warning"
+			location="top">
+			<span class="text-body-2">
+				This browser is blocking audio for the site. Allow autoplay of
+				audio for it, then press Enable audio.
+			</span>
+			<template v-slot:actions>
+				<v-btn variant="text" @click="enableAudio"> Enable audio </v-btn>
+			</template>
+		</v-snackbar>
 	</v-app>
 </template>
 
@@ -12,11 +31,36 @@
 import SiteNav from '@/components/partials/Nav'
 import http from '@/api/http'
 import { useUserStore } from '@/stores/useUserStore'
+import { onAudioBlockedChange, unlockAudio } from '@/util/audioContext'
 
 
 export default {
 	name: 'App',
 	components: { SiteNav },
+	data() {
+		return {
+			audioBlocked: false
+		}
+	},
+	mounted() {
+		this.unsubscribeAudioBlocked = onAudioBlockedChange(blocked => {
+			this.audioBlocked = blocked
+		})
+	},
+	unmounted() {
+		if (this.unsubscribeAudioBlocked) {
+			this.unsubscribeAudioBlocked()
+			this.unsubscribeAudioBlocked = null
+		}
+	},
+	methods: {
+		// A click on a real button is the strongest activation a page can get,
+		// and by the time anyone presses this they have granted the permission
+		// the browser was waiting for.
+		enableAudio() {
+			unlockAudio()
+		}
+	},
 	created:
 	function(){
 		// Was `this.$store.dispatch(logout)`: Vuex no longer exists and `logout`
