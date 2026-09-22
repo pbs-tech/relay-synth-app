@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build && node scripts/write-runtime-config.js",
     "test:unit": "vue-cli-service test:unit tests/**/*.unit.js",
     "lint": "vue-cli-service lint",
     "test:e2e": "cypress run",

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import http from '@/api/http'
 import { getAuth0Client, hasInjectedAccessToken } from '@/auth/auth0'
-import { auth0Config, isAuth0Configured } from '@/auth/config'
+import { getAuth0Config, isAuth0Configured } from '@/auth/config'
 
 /**
  * True while the browser is sitting on Auth0's redirect back to us, before the
@@ -239,7 +239,7 @@ export const useUserStore = defineStore('user', {
             const client = await getAuth0Client()
 
             return client.logout({
-                logoutParams: { returnTo: auth0Config.logoutUri }
+                logoutParams: { returnTo: getAuth0Config().logoutUri }
             })
         },
 

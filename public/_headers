@@ -1,0 +1,8 @@
+# config.json is fetched at boot and is what lets a deploy change
+# configuration without changing the bundle, so it must not be served stale.
+# The hashed assets around it keep their default immutable caching.
+#
+# Read by both Netlify and Cloudflare Pages - see _redirects for why these
+# live here rather than in netlify.toml.
+/config.json
+  Cache-Control: public, max-age=0, must-revalidate
