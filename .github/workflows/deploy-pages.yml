@@ -5,7 +5,11 @@ name: Deploy (Cloudflare Pages)
 
 on:
   push:
-    branches: [master]
+    branches:
+      - '**'
+      # Dependabot's runs get only Dependabot secrets, so a deploy from one of
+      # its branches could never authenticate. CI covers those on the PR.
+      - '!dependabot/**'
   workflow_dispatch:
     inputs:
       config_only:
@@ -14,12 +18,14 @@ on:
         default: false
         type: boolean
 
-# A push to master, or a dispatch from it, publishes to production; a dispatch
-# from any other branch publishes a preview under that branch's name. Keyed by ref so a preview and a
-# production deploy do not queue behind each other.
+# master publishes to production. Every other branch publishes a preview under
+# its own name, at <branch>.<project>.pages.dev, so a change can be checked on
+# a real host before it is merged. Keyed by ref so a preview and a production
+# deploy do not queue behind each other. A newer push to a branch supersedes
+# its preview, so that one is cancelled; production deploys always finish.
 concurrency:
   group: deploy-pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.ref_name != 'master' }}
 
 permissions:
   contents: read
@@ -36,8 +42,9 @@ jobs:
   deploy:
     name: Deploy to Pages
     runs-on: ubuntu-latest
-    # Attach required reviewers to this GitHub Environment to gate production.
-    environment: prod
+    # Attach required reviewers to the prod Environment to gate production.
+    # Previews run in their own environment so that gate never blocks them.
+    environment: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
 
     steps:
       - uses: actions/checkout@v7

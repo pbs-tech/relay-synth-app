@@ -116,9 +116,17 @@ enabled on the application and a **Default Directory** set on the tenant. Copy
 ## Deploying
 
 The site is hosted on Cloudflare Pages. `.github/workflows/deploy-pages.yml`
-deploys on every push to `master`, and can be run by hand from Actions >
-Deploy (Cloudflare Pages) > Run workflow. A manual run on any other branch
-publishes a preview under that branch's name.
+runs on every push, and can be run by hand from Actions > Deploy (Cloudflare
+Pages) > Run workflow.
+
+- **`master`** deploys to production, in the `prod` GitHub Environment. Add
+  required reviewers there to gate it.
+- **Any other branch** deploys a preview at `<branch>.<project>.pages.dev`, in
+  the `preview` environment, so a change can be verified on a real host before
+  merging. The run summary links the deployment. A newer push to the same
+  branch cancels a preview still in progress.
+- **`dependabot/**` branches** are skipped: those runs cannot read the
+  Cloudflare token, and CI already covers them on the PR.
 
 - **The build happens before the decision to deploy.** Lint and unit tests run
   on the runner, against the artifact being uploaded.
@@ -164,9 +172,13 @@ next config-only run reuses. Past that the artifact expires and the workflow
 says so rather than silently rebuilding - run it once without `config_only` to
 produce a fresh one.
 
+Previews load, and anything that needs no login can be checked on them, but
 Auth0 login will not work on a `*.pages.dev` preview until those origins are
-added to the SPA client's allowed callback and logout URLs (`frontend_urls` in
-the API's tfvars). Production on the real domain is unaffected.
+allowed on the SPA client: add `https://*.<project>.pages.dev` to its allowed
+callback, logout and web origins (`frontend_urls` in the API's tfvars; the
+callback also needs the `/callback` path - see Auth0 setup). The API's CORS
+`allowed_origins` needs the same origin for authenticated calls to succeed.
+Production on the real domain is unaffected.
 
 ### Hosting rules
 
