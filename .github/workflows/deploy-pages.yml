@@ -36,7 +36,7 @@ env:
   NODE_VERSION: '22'
   # Pinned deliberately: an unpinned wrangler would change what "deploy" means
   # between two runs of the same commit.
-  WRANGLER_VERSION: '4.36.1'
+  WRANGLER_VERSION: '4.137.0'
 
 jobs:
   deploy:
