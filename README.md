@@ -12,7 +12,7 @@ sends it to [`relay-synth-api`](https://github.com/pbs-tech/relay-synth-api) as
 Every API route except the health check requires a token, so the app needs to be
 configured before it can do anything beyond Home, About and Play.
 
-```
+```bash
 cp .env.example .env.local
 ```
 
@@ -20,8 +20,8 @@ cp .env.example .env.local
 | --- | --- | --- |
 | `VUE_APP_AUTH0_DOMAIN` | yes | Tenant domain, e.g. `relay-synth.eu.auth0.com` |
 | `VUE_APP_AUTH0_CLIENT_ID` | yes | Client ID of the SPA application |
-| `VUE_APP_AUTH0_AUDIENCE` | no | Token audience. Defaults to `VUE_APP_API_BASE_URL` |
-| `VUE_APP_API_BASE_URL` | no | API base URL. Defaults to `https://api.relay-synth.peebles.lol` |
+| `VUE_APP_AUTH0_AUDIENCE` | no | Token audience. Defaults to the API URL |
+| `VUE_APP_API_BASE_URL` | no | API base URL. Defaults to the prod API |
 | `VUE_APP_AUTH0_REDIRECT_URI` | no | Defaults to `<origin>/callback` |
 | `VUE_APP_AUTH0_LOGOUT_URI` | no | Defaults to `<origin>` |
 
@@ -53,11 +53,8 @@ which is what keeps `.env.local` working under `npm run serve`, where no file is
 generated.
 
 What this buys, concretely: one bundle can serve any environment, so the same
-artifact can be promoted between them. On Netlify the file is still generated
-during the build from the site's environment variables, so changing one there
-is still a rebuild - the Deploy workflow below is how you trigger it. On a host
-where a single object can be replaced (Cloudflare Pages, S3), changing
-configuration stops needing a build at all.
+artifact can be promoted between them, and changing configuration does not need
+a build at all - see Deploying below.
 
 The loader is in `src/config/runtime.js`. Note the ordering constraint in
 `src/main.js`: installing the router resolves the first route immediately, and
@@ -118,132 +115,100 @@ enabled on the application and a **Default Directory** set on the tenant. Copy
 
 ## Deploying
 
-Netlify builds `master` on push through its own git integration; that is the
-normal path and nothing in this repo drives it.
-
-The **Deploy** workflow (`.github/workflows/deploy.yml`) covers the redeploys
-that have no commit behind them - a changed site environment variable (Netlify
-bakes these into `config.json` during the build, so only a rebuild picks one
-up), a rebuild after the API's Terraform outputs move, or retrying a build that
-failed on Netlify's side. Run it from Actions > Deploy > Run workflow, on `master`; it refuses any
-other branch, because a build hook builds the branch it is configured for and
-would otherwise deploy `master` under a feature branch's name.
-
-It triggers a Netlify build rather than building here, so the result is the
-same deploy a push would have produced - same image, same `NODE_VERSION` pin
-from `netlify.toml`, same site environment variables.
-
-| Secret | Required | Meaning |
-| --- | --- | --- |
-| `NETLIFY_BUILD_HOOK` | yes | Build hook URL. Netlify > Site configuration > Build & deploy > Build hooks |
-| `NETLIFY_AUTH_TOKEN` | no | Personal access token. Without it the workflow triggers the build but cannot report whether it succeeded |
-| `NETLIFY_SITE_ID` | no | Site API ID, as above. Both are needed to track the deploy |
-
-With the two optional secrets set the job polls the deploy and fails when the
-build fails. Without them a green run means only that Netlify accepted the
-request, and the job says so.
-
-### Cloudflare Pages (spike)
-
-`.github/workflows/deploy-pages.yml` is a second, parallel deploy path. It
-changes nothing about the live site: it publishes to a Cloudflare Pages project
-that answers on its own `*.pages.dev` hostname, while Netlify keeps serving
-`relay-synth.peebles.lol` until the apex DNS record is moved.
-
-What it buys over the build hook:
+The site is hosted on Cloudflare Pages. `.github/workflows/deploy-pages.yml`
+deploys on every push to `master`, and can be run by hand from Actions >
+Deploy (Cloudflare Pages) > Run workflow. A manual run on any other branch
+publishes a preview under that branch's name.
 
 - **The build happens before the decision to deploy.** Lint and unit tests run
-  on the runner, against the artifact being uploaded. Netlify builds after the
-  hook has already been fired, so a failing build is something you find out
-  about afterwards.
-- **A deploy has an identity.** Wrangler returns a deployment and its URL,
-  rather than a 200 meaning "request accepted".
+  on the runner, against the artifact being uploaded.
+- **A deploy has an identity.** Wrangler returns a deployment and its URL.
 - **Rollback is picking an earlier deployment**, not rebuilding an older commit.
-- **Previews per branch** come from dispatching the workflow on that branch.
 - **The artifact carries no environment.** The build runs with no `VUE_APP_*`
   set, so nothing about dev or prod is inlined; `config.json` is written
   afterwards, in a separate step. That is the same bundle for every
   environment.
-- **Changing configuration does not rebuild.** See below.
 
 The project itself is Terraform, in `relay-synth-api` (`terraform/pages.tf`) -
-see that repo's README > Frontend hosting, which also covers the cutover.
+see that repo's README > Frontend hosting, which also covers the DNS cutover.
 
-Configuration lives in repository **variables**, not secrets: an Auth0 SPA
-client id and an API URL are public, and variables can be read and audited.
+Configuration lives in GitHub repository **variables**, not secrets: an Auth0
+SPA client id and an API URL are public, and variables can be read and audited.
 
 | Setting | Kind | Meaning |
 | --- | --- | --- |
-| `CLOUDFLARE_PAGES_PROJECT` | variable | Pages project name, from `terraform output pages_project_name` |
+| `CLOUDFLARE_PAGES_PROJECT` | variable | `terraform output pages_project_name` |
 | `CLOUDFLARE_ACCOUNT_ID` | variable | Account that owns the project |
 | `CLOUDFLARE_API_TOKEN` | secret | Needs Account > Cloudflare Pages: Edit |
-| `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_AUDIENCE`, `API_BASE_URL` | variables | Written into `config.json` after the build |
+| `AUTH0_DOMAIN` | variable | `terraform output auth0_domain` |
+| `AUTH0_CLIENT_ID` | variable | `terraform output auth0_spa_client_id` |
+| `AUTH0_AUDIENCE` | variable | `terraform output auth0_audience` |
+| `API_BASE_URL` | variable | `terraform output api_endpoint` |
 
-To try it: create the project in `relay-synth-api`, set the variables above,
-then run **Deploy (Cloudflare Pages)** from Actions on `master` and open the
-`*.pages.dev` URL in the run summary.
+`AUTH0_AUDIENCE` must equal the API's `auth0_api_identifier`, or API Gateway's
+JWT authorizer rejects every token.
 
-#### Changing configuration without rebuilding
+### Changing configuration without rebuilding
 
-Run the same workflow with **config_only** ticked. It skips `npm ci`, the
-tests and the build, downloads the `dist` from the last successful deploy on
-that branch, writes a fresh `config.json` from the repository variables, and
-uploads that. The bundles are byte-for-byte the ones that were tested; only
-the configuration file differs.
-
-This is the payoff from the runtime config work: a value like `API_BASE_URL`
-can change without producing a bundle that nothing has run against. The run
-summary reports the commit the bundles were built from, which on this path is
-not the commit the workflow checked out.
+Run the workflow with **config_only** ticked. It skips `npm ci`, the tests and
+the build, downloads the `dist` from the last successful deploy on that branch,
+writes a fresh `config.json` from the repository variables, and uploads that.
+The bundles are byte-for-byte the ones that were tested; only the configuration
+file differs. The run summary reports the commit the bundles were built from,
+which on this path is not the commit the workflow checked out.
 
 Every deploy keeps its `dist` as a run artifact for 30 days, which is what the
 next config-only run reuses. Past that the artifact expires and the workflow
 says so rather than silently rebuilding - run it once without `config_only` to
 produce a fresh one.
 
-**Known gaps, deliberately left for after the spike:**
+Auth0 login will not work on a `*.pages.dev` preview until those origins are
+added to the SPA client's allowed callback and logout URLs (`frontend_urls` in
+the API's tfvars). Production on the real domain is unaffected.
 
-- Auth0 login will not work on a `*.pages.dev` preview until those origins are
-  added to the SPA client's allowed callback and logout URLs (`frontend_urls`
-  in the API's tfvars). Production on the real domain is unaffected.
-- The workflow is `workflow_dispatch` only. Deploying on push to `master`
-  belongs with the cutover, not before it, or two hosts would be publishing the
-  same commit.
+### Hosting rules
 
-`public/_redirects` and `public/_headers` hold the SPA rewrite and the
-`config.json` cache header. Both Netlify and Pages read those files from the
-published directory, so the rules are not restated per host - which is what
-makes the cutover a DNS change rather than a config rewrite.
+Pages serves `index.html` for any path that does not match a file, because the
+build has no top-level `404.html` - that is its single-page-app mode, and it is
+what lets `/callback` and other history-mode routes load directly.
+`public/_headers` keeps `config.json` from being served stale.
 
 ## Project setup
-```
+
+```bash
 npm install
 ```
 
 ### Compiles and hot-reloads for development
-```
+
+```bash
 npm run serve
 ```
 
 ### Compiles and minifies for production
-```
+
+```bash
 npm run build
 ```
 
 ### Lints and fixes files
-```
+
+```bash
 npm run lint
 ```
 
 ### Unit tests
-```
+
+```bash
 npm run test:unit
 ```
 
-### End-to-end tests
-```
+### Running end-to-end tests
+
+```bash
 npm run test:e2e
 ```
 
 ### Customize configuration
+
 See [Configuration Reference](https://cli.vuejs.org/config/).

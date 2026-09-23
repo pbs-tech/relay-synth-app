@@ -1,17 +1,11 @@
-# Cloudflare Pages deploy - the spike alongside the Netlify build hook, not yet
-# a replacement for it. Nothing here touches the live site until the apex DNS
-# record moves; until then this publishes to the Pages project's own
-# *.pages.dev hostname and Netlify keeps serving relay-synth.peebles.lol.
-#
-# The difference from deploy.yml is what a deploy *is*. Netlify's build hook is
-# a poke: it takes no artifact, returns no identity, and the workflow has to go
-# looking for what it started. Here the build happens on the runner, the upload
-# is the deploy, and it comes back with a deployment id and URL. Previews,
-# rollback to any earlier deployment, and promoting a tested artifact all
-# follow from that.
+# Cloudflare Pages deploy. The build happens on the runner, the upload is the
+# deploy, and it comes back with a deployment id and URL. Previews, rollback to
+# any earlier deployment, and promoting a tested artifact all follow from that.
 name: Deploy (Cloudflare Pages)
 
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
     inputs:
       config_only:
@@ -20,8 +14,8 @@ on:
         default: false
         type: boolean
 
-# A dispatch from master publishes to production; from any other branch it
-# publishes a preview under that branch's name. Keyed by ref so a preview and a
+# A push to master, or a dispatch from it, publishes to production; a dispatch
+# from any other branch publishes a preview under that branch's name. Keyed by ref so a preview and a
 # production deploy do not queue behind each other.
 concurrency:
   group: deploy-pages-${{ github.ref }}
@@ -64,8 +58,7 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: '0'
 
-      # Deploy only what passed. The Netlify path cannot do this - its build
-      # runs on Netlify, after the decision to deploy has already been made.
+      # Deploy only what passed.
       - name: Lint and test
         if: ${{ !inputs.config_only }}
         run: |

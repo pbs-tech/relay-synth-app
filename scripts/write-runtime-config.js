@@ -5,10 +5,9 @@
  * in `public/`, where it would be picked up by `npm run serve` and quietly
  * shadow a developer's `.env.local`.
  *
- * Values are read from `VUE_APP_<KEY>` or from a bare `<KEY>`. Accepting both
- * is what makes this a no-op to adopt: the existing Netlify site variables
- * already carry the prefix, and a deploy that no longer needs a build can set
- * the unprefixed names instead.
+ * Values are read from `VUE_APP_<KEY>` or from a bare `<KEY>`. The deploy
+ * workflow passes the unprefixed names from the GitHub repository variables;
+ * the prefixed ones are what a local `.env.local` build carries.
  *
  * Keys absent from the environment are left out of the file rather than
  * written empty, so the bundle's own fallbacks still apply to them.
