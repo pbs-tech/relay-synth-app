@@ -47,6 +47,28 @@ jobs:
     environment: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
 
     steps:
+      # prod and preview point at different API stacks in different Auth0
+      # tenants, so every value is set on the environment itself. A missing
+      # one would otherwise fall through to the bundle's defaults - which are
+      # prod's - and a preview would quietly talk to production. Checked
+      # first, so a misconfigured environment fails before a build.
+      - name: Check configuration
+        env:
+          VUE_APP_AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN }}
+          VUE_APP_AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID }}
+          VUE_APP_AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          ENVIRONMENT: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
+        run: |
+          missing=()
+          for name in VUE_APP_AUTH0_DOMAIN VUE_APP_AUTH0_CLIENT_ID VUE_APP_AUTH0_AUDIENCE API_BASE_URL; do
+            [ -n "${!name}" ] || missing+=("${name}")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Set ${missing[*]} as variables on the '${ENVIRONMENT}' environment (Settings > Environments). The API repo's deploy summary lists the values."
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
@@ -150,15 +172,14 @@ jobs:
 
       # The environment is written into dist/config.json after the bundles
       # exist, which is what lets the config-only path above mean anything.
-      # These are public values - an Auth0 SPA client id is not a secret, and
-      # it ends up in config.json regardless - so variables are preferred,
-      # where they can be read and audited. The Auth0 ones keep the VUE_APP_
-      # prefix they have locally; a secret of the same name is the fallback.
+      # The values come from the job's GitHub Environment - prod or preview,
+      # each backed by its own API stack and Auth0 tenant - and were checked
+      # at the start of the job.
       - name: Apply runtime configuration
         env:
-          AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN || secrets.VUE_APP_AUTH0_DOMAIN }}
-          AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID || secrets.VUE_APP_AUTH0_CLIENT_ID }}
-          AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE || secrets.VUE_APP_AUTH0_AUDIENCE }}
+          AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID }}
+          AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: node scripts/write-runtime-config.js dist/config.json
 

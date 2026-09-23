@@ -140,23 +140,27 @@ Pages) > Run workflow.
 The project itself is Terraform, in `relay-synth-api` (`terraform/pages.tf`) -
 see that repo's README > Frontend hosting, which also covers the DNS cutover.
 
-Configuration lives in GitHub repository **variables**, not secrets: an Auth0
-SPA client id and an API URL are public, and variables can be read and audited.
+Production and previews are separate stacks: `prod` uses the prod API and
+Auth0 tenant, `preview` uses dev's. So the app's configuration is set per
+GitHub **Environment**, never at repository level, where a preview could fall
+back to prod's values. The workflow refuses to deploy if any is missing. The
+values are public, so they are variables, not secrets. The API repo's Deploy
+run summary lists them for each environment.
 
-| Setting | Kind | Meaning |
+| Setting | Where | Source |
 | --- | --- | --- |
-| `CLOUDFLARE_PAGES_PROJECT` | variable | `terraform output pages_project_name` |
-| `CLOUDFLARE_ACCOUNT_ID` | variable | Account that owns the project |
-| `CLOUDFLARE_API_TOKEN` | secret | Needs Account > Cloudflare Pages: Edit |
-| `VUE_APP_AUTH0_DOMAIN` | variable | `terraform output auth0_domain` |
-| `VUE_APP_AUTH0_CLIENT_ID` | variable | `terraform output auth0_spa_client_id` |
-| `VUE_APP_AUTH0_AUDIENCE` | variable | `terraform output auth0_audience` |
-| `API_BASE_URL` | variable | `terraform output api_endpoint` |
+| `CLOUDFLARE_PAGES_PROJECT` | repo var | `terraform output pages_project_name` |
+| `CLOUDFLARE_ACCOUNT_ID` | repo var | Account that owns the project |
+| `CLOUDFLARE_API_TOKEN` | repo secret | Account > Cloudflare Pages: Edit |
+| `VUE_APP_AUTH0_DOMAIN` | env var | `terraform output auth0_domain` |
+| `VUE_APP_AUTH0_CLIENT_ID` | env var | `terraform output auth0_spa_client_id` |
+| `VUE_APP_AUTH0_AUDIENCE` | env var | `terraform output auth0_audience` |
+| `API_BASE_URL` | env var | `terraform output api_endpoint` |
 
-`VUE_APP_AUTH0_AUDIENCE` must equal the API's `auth0_api_identifier`, or API
-Gateway's JWT authorizer rejects every token. Any of the `VUE_APP_AUTH0_*`
-values may be a secret instead of a variable; the workflow falls back to a
-secret of the same name.
+Take the `prod` environment's values from the API's prod state and the
+`preview` environment's from its dev state. `VUE_APP_AUTH0_AUDIENCE` must
+equal that stack's `auth0_api_identifier`, or API Gateway's JWT authorizer
+rejects every token.
 
 ### Changing configuration without rebuilding
 
@@ -172,13 +176,9 @@ next config-only run reuses. Past that the artifact expires and the workflow
 says so rather than silently rebuilding - run it once without `config_only` to
 produce a fresh one.
 
-Previews load, and anything that needs no login can be checked on them, but
-Auth0 login will not work on a `*.pages.dev` preview until those origins are
-allowed on the SPA client: add `https://*.<project>.pages.dev` to its allowed
-callback, logout and web origins (`frontend_urls` in the API's tfvars; the
-callback also needs the `/callback` path - see Auth0 setup). The API's CORS
-`allowed_origins` needs the same origin for authenticated calls to succeed.
-Production on the real domain is unaffected.
+Previews sign in against the dev stack. Its `preview_pages_hostname` in the
+API's `dev.tfvars` allows `https://*.relay-synth.pages.dev` on dev's Auth0 SPA
+client and in dev's CORS; prod allows only the real domain.
 
 ### Hosting rules
 
