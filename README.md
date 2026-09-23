@@ -140,13 +140,15 @@ SPA client id and an API URL are public, and variables can be read and audited.
 | `CLOUDFLARE_PAGES_PROJECT` | variable | `terraform output pages_project_name` |
 | `CLOUDFLARE_ACCOUNT_ID` | variable | Account that owns the project |
 | `CLOUDFLARE_API_TOKEN` | secret | Needs Account > Cloudflare Pages: Edit |
-| `AUTH0_DOMAIN` | variable | `terraform output auth0_domain` |
-| `AUTH0_CLIENT_ID` | variable | `terraform output auth0_spa_client_id` |
-| `AUTH0_AUDIENCE` | variable | `terraform output auth0_audience` |
+| `VUE_APP_AUTH0_DOMAIN` | variable | `terraform output auth0_domain` |
+| `VUE_APP_AUTH0_CLIENT_ID` | variable | `terraform output auth0_spa_client_id` |
+| `VUE_APP_AUTH0_AUDIENCE` | variable | `terraform output auth0_audience` |
 | `API_BASE_URL` | variable | `terraform output api_endpoint` |
 
-`AUTH0_AUDIENCE` must equal the API's `auth0_api_identifier`, or API Gateway's
-JWT authorizer rejects every token.
+`VUE_APP_AUTH0_AUDIENCE` must equal the API's `auth0_api_identifier`, or API
+Gateway's JWT authorizer rejects every token. Any of the `VUE_APP_AUTH0_*`
+values may be a secret instead of a variable; the workflow falls back to a
+secret of the same name.
 
 ### Changing configuration without rebuilding
 
