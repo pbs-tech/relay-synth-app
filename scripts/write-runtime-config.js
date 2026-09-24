@@ -6,7 +6,7 @@
  * shadow a developer's `.env.local`.
  *
  * Values are read from `VUE_APP_<KEY>` or from a bare `<KEY>`. The deploy
- * workflow passes the unprefixed names from the GitHub repository variables;
+ * workflow passes the unprefixed names from its GitHub Environment settings;
  * the prefixed ones are what a local `.env.local` build carries.
  *
  * Keys absent from the environment are left out of the file rather than

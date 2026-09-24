@@ -47,15 +47,20 @@ jobs:
     environment: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
 
     steps:
-      # prod and preview point at different API stacks in different Auth0
-      # tenants, so every value is set on the environment itself. A missing
-      # one would otherwise fall through to the bundle's defaults - which are
-      # prod's - and a preview would quietly talk to production. Checked
-      # first, so a misconfigured environment fails before a build.
+      # prod and preview point at different API stacks, each with its own
+      # Auth0 API and SPA client, so everything but the shared tenant's domain
+      # is set on the environment itself. A missing one would otherwise fall
+      # through to the bundle's defaults - which are prod's - and a preview
+      # would quietly talk to production. Checked first, so a misconfigured
+      # environment fails before a build.
+      #
+      # The domain and client ID may be secrets or variables. None of these
+      # values is sensitive - they all end up in the public config.json - but
+      # a secret keeps working here, it is only masked in the logs.
       - name: Check configuration
         env:
-          VUE_APP_AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN }}
-          VUE_APP_AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID }}
+          VUE_APP_AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN || secrets.VUE_APP_AUTH0_DOMAIN }}
+          VUE_APP_AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID || secrets.VUE_APP_AUTH0_CLIENT_ID }}
           VUE_APP_AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
           ENVIRONMENT: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
@@ -65,7 +70,7 @@ jobs:
             [ -n "${!name}" ] || missing+=("${name}")
           done
           if [ "${#missing[@]}" -gt 0 ]; then
-            echo "::error::Set ${missing[*]} as variables on the '${ENVIRONMENT}' environment (Settings > Environments). The API repo's deploy summary lists the values."
+            echo "::error::Set ${missing[*]} for the '${ENVIRONMENT}' environment (Settings > Environments, or Secrets and variables). The API repo's deploy summary lists the values and where each goes."
             exit 1
           fi
 
@@ -173,12 +178,12 @@ jobs:
       # The environment is written into dist/config.json after the bundles
       # exist, which is what lets the config-only path above mean anything.
       # The values come from the job's GitHub Environment - prod or preview,
-      # each backed by its own API stack and Auth0 tenant - and were checked
+      # each backed by its own API stack and Auth0 client - and were checked
       # at the start of the job.
       - name: Apply runtime configuration
         env:
-          AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN }}
-          AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID }}
+          AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN || secrets.VUE_APP_AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID || secrets.VUE_APP_AUTH0_CLIENT_ID }}
           AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: node scripts/write-runtime-config.js dist/config.json

@@ -140,22 +140,27 @@ Pages) > Run workflow.
 The project itself is Terraform, in `relay-synth-api` (`terraform/pages.tf`) -
 see that repo's README > Frontend hosting, which also covers the DNS cutover.
 
-Production and previews are separate stacks: `prod` uses the prod API and
-Auth0 tenant, `preview` uses dev's. So the app's configuration is set per
-GitHub **Environment**, never at repository level, where a preview could fall
-back to prod's values. The workflow refuses to deploy if any is missing. The
-values are public, so they are variables, not secrets. The API repo's Deploy
-run summary lists them for each environment.
+Production and previews are separate stacks: `prod` uses the prod API and its
+Auth0 SPA client, `preview` uses dev's. Both live in one Auth0 tenant, so the
+domain is shared and set once at repository level; the client ID, audience
+and API URL differ and are set per GitHub **Environment**, where a preview
+cannot fall back to prod's values. The workflow refuses to deploy if any is
+missing. None of these is sensitive - they are all served in `config.json` -
+so the domain and client ID are read from a secret or a variable of that name,
+whichever exists. The API repo's Deploy run summary lists them for each
+environment.
 
-| Setting | Where | Source |
+| Setting | Where | Source (`terraform output` in the API repo) |
 | --- | --- | --- |
-| `CLOUDFLARE_PAGES_PROJECT` | repo var | `terraform output pages_project_name` |
+| `CLOUDFLARE_PAGES_PROJECT` | repo var | `pages_project_name` |
 | `CLOUDFLARE_ACCOUNT_ID` | repo var | Account that owns the project |
 | `CLOUDFLARE_API_TOKEN` | repo secret | Account > Cloudflare Pages: Edit |
-| `VUE_APP_AUTH0_DOMAIN` | env var | `terraform output auth0_domain` |
-| `VUE_APP_AUTH0_CLIENT_ID` | env var | `terraform output auth0_spa_client_id` |
-| `VUE_APP_AUTH0_AUDIENCE` | env var | `terraform output auth0_audience` |
-| `API_BASE_URL` | env var | `terraform output api_endpoint` |
+| `VUE_APP_AUTH0_DOMAIN` | repo secret | `auth0_domain` |
+| `VUE_APP_AUTH0_CLIENT_ID` | env secret | `auth0_spa_client_id` |
+| `VUE_APP_AUTH0_AUDIENCE` | env var | `auth0_audience` |
+| `API_BASE_URL` | env var | `api_endpoint` |
+
+A SPA has no client secret; nothing reads one, so do not set it.
 
 Take the `prod` environment's values from the API's prod state and the
 `preview` environment's from its dev state. `VUE_APP_AUTH0_AUDIENCE` must
@@ -166,7 +171,7 @@ rejects every token.
 
 Run the workflow with **config_only** ticked. It skips `npm ci`, the tests and
 the build, downloads the `dist` from the last successful deploy on that branch,
-writes a fresh `config.json` from the repository variables, and uploads that.
+writes a fresh `config.json` from the environment's settings, and uploads that.
 The bundles are byte-for-byte the ones that were tested; only the configuration
 file differs. The run summary reports the commit the bundles were built from,
 which on this path is not the commit the workflow checked out.
