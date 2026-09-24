@@ -1,17 +1,15 @@
-# Cloudflare Pages deploy - the spike alongside the Netlify build hook, not yet
-# a replacement for it. Nothing here touches the live site until the apex DNS
-# record moves; until then this publishes to the Pages project's own
-# *.pages.dev hostname and Netlify keeps serving relay-synth.peebles.lol.
-#
-# The difference from deploy.yml is what a deploy *is*. Netlify's build hook is
-# a poke: it takes no artifact, returns no identity, and the workflow has to go
-# looking for what it started. Here the build happens on the runner, the upload
-# is the deploy, and it comes back with a deployment id and URL. Previews,
-# rollback to any earlier deployment, and promoting a tested artifact all
-# follow from that.
+# Cloudflare Pages deploy. The build happens on the runner, the upload is the
+# deploy, and it comes back with a deployment id and URL. Previews, rollback to
+# any earlier deployment, and promoting a tested artifact all follow from that.
 name: Deploy (Cloudflare Pages)
 
 on:
+  push:
+    branches:
+      - '**'
+      # Dependabot's runs get only Dependabot secrets, so a deploy from one of
+      # its branches could never authenticate. CI covers those on the PR.
+      - '!dependabot/**'
   workflow_dispatch:
     inputs:
       config_only:
@@ -20,12 +18,14 @@ on:
         default: false
         type: boolean
 
-# A dispatch from master publishes to production; from any other branch it
-# publishes a preview under that branch's name. Keyed by ref so a preview and a
-# production deploy do not queue behind each other.
+# master publishes to production. Every other branch publishes a preview under
+# its own name, at <branch>.<project>.pages.dev, so a change can be checked on
+# a real host before it is merged. Keyed by ref so a preview and a production
+# deploy do not queue behind each other. A newer push to a branch supersedes
+# its preview, so that one is cancelled; production deploys always finish.
 concurrency:
   group: deploy-pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.ref_name != 'master' }}
 
 permissions:
   contents: read
@@ -36,16 +36,44 @@ env:
   NODE_VERSION: '22'
   # Pinned deliberately: an unpinned wrangler would change what "deploy" means
   # between two runs of the same commit.
-  WRANGLER_VERSION: '4.36.1'
+  WRANGLER_VERSION: '4.137.0'
 
 jobs:
   deploy:
     name: Deploy to Pages
     runs-on: ubuntu-latest
-    # Attach required reviewers to this GitHub Environment to gate production.
-    environment: prod
+    # Attach required reviewers to the prod Environment to gate production.
+    # Previews run in their own environment so that gate never blocks them.
+    environment: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
 
     steps:
+      # prod and preview point at different API stacks, each with its own
+      # Auth0 API and SPA client, so everything but the shared tenant's domain
+      # is set on the environment itself. A missing one would otherwise fall
+      # through to the bundle's defaults - which are prod's - and a preview
+      # would quietly talk to production. Checked first, so a misconfigured
+      # environment fails before a build.
+      #
+      # The domain and client ID may be secrets or variables. None of these
+      # values is sensitive - they all end up in the public config.json - but
+      # a secret keeps working here, it is only masked in the logs.
+      - name: Check configuration
+        env:
+          VUE_APP_AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN || secrets.VUE_APP_AUTH0_DOMAIN }}
+          VUE_APP_AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID || secrets.VUE_APP_AUTH0_CLIENT_ID }}
+          VUE_APP_AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          ENVIRONMENT: ${{ github.ref_name == 'master' && 'prod' || 'preview' }}
+        run: |
+          missing=()
+          for name in VUE_APP_AUTH0_DOMAIN VUE_APP_AUTH0_CLIENT_ID VUE_APP_AUTH0_AUDIENCE API_BASE_URL; do
+            [ -n "${!name}" ] || missing+=("${name}")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Set ${missing[*]} for the '${ENVIRONMENT}' environment (Settings > Environments, or Secrets and variables). The API repo's deploy summary lists the values and where each goes."
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
@@ -64,8 +92,7 @@ jobs:
         env:
           CYPRESS_INSTALL_BINARY: '0'
 
-      # Deploy only what passed. The Netlify path cannot do this - its build
-      # runs on Netlify, after the decision to deploy has already been made.
+      # Deploy only what passed.
       - name: Lint and test
         if: ${{ !inputs.config_only }}
         run: |
@@ -150,14 +177,14 @@ jobs:
 
       # The environment is written into dist/config.json after the bundles
       # exist, which is what lets the config-only path above mean anything.
-      # These are public values - an Auth0 SPA client id is not a secret - so
-      # they live in repository variables rather than secrets, where they can
-      # be read and audited.
+      # The values come from the job's GitHub Environment - prod or preview,
+      # each backed by its own API stack and Auth0 client - and were checked
+      # at the start of the job.
       - name: Apply runtime configuration
         env:
-          AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
-          AUTH0_CLIENT_ID: ${{ vars.AUTH0_CLIENT_ID }}
-          AUTH0_AUDIENCE: ${{ vars.AUTH0_AUDIENCE }}
+          AUTH0_DOMAIN: ${{ vars.VUE_APP_AUTH0_DOMAIN || secrets.VUE_APP_AUTH0_DOMAIN }}
+          AUTH0_CLIENT_ID: ${{ vars.VUE_APP_AUTH0_CLIENT_ID || secrets.VUE_APP_AUTH0_CLIENT_ID }}
+          AUTH0_AUDIENCE: ${{ vars.VUE_APP_AUTH0_AUDIENCE }}
           API_BASE_URL: ${{ vars.API_BASE_URL }}
         run: node scripts/write-runtime-config.js dist/config.json
 
