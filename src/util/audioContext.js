@@ -1,4 +1,5 @@
 import * as Tone from "tone";
+import { polyfillListenerParams } from "./audioListener";
 
 // Tone 14 builds its context on standardized-audio-context, whose AudioContext
 // omits the deprecated createScriptProcessor. NexusUI still relies on it (its
@@ -9,12 +10,16 @@ import * as Tone from "tone";
 export function installNativeAudioContext() {
     const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
     if (!NativeAudioContext) return;
+    const context = new NativeAudioContext();
+    // Before Tone sees it: Tone reads these the first time anything connects
+    // to the destination, and on Firefox-based browsers they are missing.
+    polyfillListenerParams(context);
     // disposeOld closes the standardized-audio-context AudioContext that Tone
     // opened for itself the moment it was imported. Nothing is ever connected
     // to it, but without this it stays open and suspended for the life of the
     // page and still counts against the per-page AudioContext limit - four on
     // iOS Safari, and NexusUI already opens one of its own at import.
-    Tone.setContext(new Tone.Context(new NativeAudioContext()), true);
+    Tone.setContext(new Tone.Context(context), true);
 }
 
 // Browsers create the AudioContext suspended and only allow it to resume from a
