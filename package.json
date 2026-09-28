@@ -41,7 +41,7 @@
     "minimist": "^1.2.5",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
-    "sass": "^1.104.1",
+    "sass": "^1.105.0",
     "sass-loader": "^13.3.3"
   },
   "gitHooks": {
