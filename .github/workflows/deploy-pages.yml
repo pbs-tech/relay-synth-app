@@ -161,7 +161,7 @@ jobs:
 
       - name: Fetch the last deployed build
         if: ${{ inputs.config_only }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           run-id: ${{ steps.find.outputs.run_id }}
           github-token: ${{ github.token }}
