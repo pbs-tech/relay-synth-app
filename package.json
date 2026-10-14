@@ -11,7 +11,7 @@
     "test:e2e:open": "cypress open"
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "^2.27.0",
+    "@auth0/auth0-spa-js": "^2.28.3",
     "axios": "^1.20.0",
     "core-js": "^3.50.0",
     "nexusui": "^2.1.6",
@@ -19,7 +19,7 @@
     "tone": "^14.8.49",
     "vue": "^3.5.43",
     "vue-router": "^4.6.4",
-    "vuetify": "^3.13.5"
+    "vuetify": "^3.13.6"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.14.7",
@@ -33,7 +33,7 @@
     "babel-eslint": "^10.0.3",
     "babel-plugin-istanbul": "^6.0.0",
     "chai": "^4.2.0",
-    "cypress": "16.1.0",
+    "cypress": "16.1.1",
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.28.0",
     "istanbul-lib-coverage": "^3.0.0",
@@ -41,7 +41,7 @@
     "minimist": "^1.2.5",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
-    "sass": "^1.105.0",
+    "sass": "^1.105.1",
     "sass-loader": "^13.3.3"
   },
   "gitHooks": {
