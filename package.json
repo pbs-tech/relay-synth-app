@@ -11,9 +11,9 @@
     "test:e2e:open": "cypress open"
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "^2.28.4",
+    "@auth0/auth0-spa-js": "^2.29.0",
     "axios": "^1.20.0",
-    "core-js": "^3.50.0",
+    "core-js": "^3.51.0",
     "nexusui": "^2.1.6",
     "pinia": "^2.2.6",
     "tone": "^14.8.49",
