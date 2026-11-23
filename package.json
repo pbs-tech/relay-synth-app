@@ -18,8 +18,8 @@
     "pinia": "^2.2.6",
     "tone": "^14.8.49",
     "vue": "^3.5.45",
-    "vue-router": "^4.6.4",
-    "vuetify": "^3.13.7"
+    "vue-router": "^4.6.5",
+    "vuetify": "^3.13.8"
   },
   "devDependencies": {
     "@cypress/code-coverage": "^3.14.7",
